@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dzz">
-    <title>Dzz</title>
+    <title>Dzz 7.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
@@ -24,6 +24,7 @@
             --expired-text: #b0b0b0;
             --border-color: #e0e0e0;
             --badge-bg: #f0f2f0;
+            --timer-active: #ff9800; /* 计时中颜色 */
         }
 
         body { 
@@ -31,7 +32,7 @@
             background-color: var(--bg-color); 
             margin: 0; padding: 0; 
             padding-top: env(safe-area-inset-top); 
-            padding-bottom: 40px; 
+            padding-bottom: 120px; 
             color: var(--text-main);
             user-select: none; -webkit-user-select: none;
             overflow-x: hidden; 
@@ -48,102 +49,71 @@
         h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--theme-dark); letter-spacing: 1px;}
         .date-str { font-size: 11px; color: var(--text-sub); }
 
-        /* --- 🔥 1. 今日聚焦模块 (可折叠/改名) --- */
-        .dashboard-container {
-            padding: 15px 15px 5px 15px;
-        }
+        /* --- 🔥 1. 今日聚焦模块 --- */
+        .dashboard-container { padding: 15px 15px 5px 15px; }
         .dashboard-block {
-            background: #fff;
-            border-radius: 16px;
-            padding: 0; /* padding移给子元素以便折叠 */
+            background: #fff; border-radius: 16px; padding: 0; 
             border: 2px solid var(--theme-dark); 
             box-shadow: 0 4px 15px rgba(85, 107, 47, 0.15);
-            overflow: hidden;
-            transition: all 0.3s ease;
+            overflow: hidden; transition: all 0.3s ease;
         }
-        
-        /* 标题栏 */
         .dash-header {
-            display: flex; align-items: center; gap: 8px;
-            padding: 12px 15px;
-            background: rgba(234, 241, 234, 0.3);
-            cursor: pointer;
-            border-bottom: 1px solid transparent;
+            display: flex; align-items: center; gap: 8px; padding: 12px 15px;
+            background: rgba(234, 241, 234, 0.3); cursor: pointer; border-bottom: 1px solid transparent;
         }
-        .dashboard-block.expanded .dash-header {
-            border-bottom: 1px solid #eee;
-        }
-
-        .dash-icon { font-size: 18px; }
+        .dashboard-block.expanded .dash-header { border-bottom: 1px solid #eee; }
         .dash-title { 
             font-size: 16px; font-weight: 800; color: var(--theme-dark); 
             flex: 1; outline: none; border-bottom: 1px dashed transparent;
         }
         .dash-title:focus { border-bottom: 1px dashed var(--theme-dark); }
         .dash-count { font-size: 12px; background: var(--theme-dark); color: white; padding: 2px 8px; border-radius: 10px; }
-        
-        .dash-arrow { 
-            font-size: 12px; color: var(--text-sub); transition: 0.3s; margin-left: 8px;
-        }
-        /* 折叠状态箭头旋转 */
+        .dash-arrow { font-size: 12px; color: var(--text-sub); transition: 0.3s; margin-left: 8px; }
         .dashboard-block.collapsed .dash-arrow { transform: rotate(-90deg); }
         .dashboard-block.collapsed .dash-list-wrapper { display: none; }
-
         .dash-list-wrapper { padding: 5px 10px 10px 10px; min-height: 10px;}
 
-        /* --- 🔥 2. 横向滑动容器 --- */
+        /* 来源标签 */
+        .source-tag {
+            font-size: 10px; color: #fff; background-color: #ccc; 
+            padding: 1px 5px; border-radius: 4px; margin-right: 6px; vertical-align: middle;
+        }
+
+        /* --- 🔥 2. 横向滑动容器 (固定宽度) --- */
         .scroll-container {
-            display: flex;
-            overflow-x: auto; 
-            scroll-snap-type: x mandatory; 
-            gap: 15px;
-            padding: 10px 15px 20px 15px; 
-            -webkit-overflow-scrolling: touch; 
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
+            gap: 15px; padding: 10px 15px 20px 15px; -webkit-overflow-scrolling: touch; 
         }
         .scroll-container::-webkit-scrollbar { display: none; }
 
         /* 板块卡片 */
         .section-block { 
-            background: var(--card-bg); 
-            border-radius: 16px; 
-            padding: 0 0 12px 0; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            overflow: hidden;
-            min-width: 88vw; 
-            scroll-snap-align: center; 
-            height: fit-content; 
-            flex-shrink: 0; 
+            background: var(--card-bg); border-radius: 16px; padding: 0 0 12px 0; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;
+            /* 🔥 固定宽度设置 */
+            min-width: 90vw; width: 90vw; max-width: 400px;
+            scroll-snap-align: center; height: fit-content; flex-shrink: 0; 
         }
 
         .section-header-row {
             display: flex; justify-content: space-between; align-items: stretch;
-            border-bottom: 1px solid var(--theme-light);
-            min-height: 52px; background: #fff;
+            border-bottom: 1px solid var(--theme-light); min-height: 52px; background: #fff;
         }
-        .sec-title-group { 
-            display: flex; align-items: center; gap: 10px; flex: 1; 
-            padding: 15px; cursor: pointer;
-        }
+        .sec-title-group { display: flex; align-items: center; gap: 10px; flex: 1; padding: 15px; cursor: pointer; }
         .section-title { font-size: 16px; font-weight: 700; color: var(--theme-dark); padding: 4px 8px; border-radius: 6px;}
         .section-count { font-size: 11px; color: #fff; background: var(--theme-dark); padding: 2px 7px; border-radius: 10px; opacity: 0.8;}
         
         /* 任务列表 */
-        .task-list-area { min-height: 20px; padding: 0 10px; }
+        .task-list-area { min-height: 40px; padding: 0 10px; } /* 增加高度便于拖拽放入 */
         .task-item { 
-            border-bottom: 1px solid #f5f5f5; 
-            padding: 14px 2px;
-            background: white; 
-            position: relative;
+            border-bottom: 1px solid #f5f5f5; padding: 14px 2px; background: white; position: relative;
         }
 
+        /* --- 任务内容布局 --- */
         .task-row-top { display: flex; align-items: flex-start; }
         .checkbox { 
-            width: 18px; height: 18px; 
-            border: 2px solid var(--theme-dark); 
-            border-radius: 6px; 
-            margin-right: 12px; margin-top: 2px;
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; 
-            background: #fff; transition: 0.2s;
+            width: 18px; height: 18px; border: 2px solid var(--theme-dark); border-radius: 6px; 
+            margin-right: 12px; margin-top: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; transition: 0.2s;
         }
         .checkbox.checked { background: var(--theme-dark); border-color: var(--theme-dark); }
         .checkbox.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
@@ -152,24 +122,40 @@
         .title-date-inline-wrapper { display: inline; }
         .task-name { font-size: 15px; color: var(--text-main); font-weight: 500; margin-right: 8px; cursor: pointer; display: inline; }
         
-        /* 日期样式 */
+        /* 日期 */
         .date-inline-container { display: inline; font-size: 12px; color: var(--text-sub); }
         .date-label { font-size: 11px; color: #aaa; margin-right: 2px; margin-left: 4px;}
         .date-val { font-family: -apple-system, monospace; font-weight: 500; }
         .date-gray { color: var(--expired-text); }
         .date-green { color: var(--highlight); font-weight: bold; }
         .date-red { color: var(--danger); font-weight: bold; }
-
-        .date-badge { 
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 0 5px; border-radius: 4px; font-size: 10px; 
-            height: 18px; margin: 0 4px; vertical-align: text-bottom;
-        }
+        .date-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; border-radius: 4px; font-size: 10px; height: 18px; margin: 0 4px; vertical-align: text-bottom; }
         .badge-gray { background: #f5f5f5; color: #ccc; }     
         .badge-green { background: #e8f5e9; color: #2e7d32; } 
         .badge-red { background: #ffebee; color: var(--danger); }   
 
         .task-note-middle { font-size: 12px; color: #999; margin-top: 3px; margin-bottom: 5px; display: block; }
+
+        /* --- ⏱ 专注计时 & 时间记录 --- */
+        .timer-logs-area {
+            margin-top: 5px; font-size: 11px; color: #888;
+        }
+        .time-log-item {
+            display: inline-block; background: #f9f9f9; padding: 2px 6px; 
+            border-radius: 4px; margin-right: 5px; margin-bottom: 2px; border: 1px solid #eee;
+        }
+        .timer-btn {
+            width: 24px; height: 24px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer; margin-left: 10px; flex-shrink: 0;
+            border: 1px solid #ddd; background: #fff; color: var(--theme-dark);
+            transition: all 0.2s;
+        }
+        .timer-btn.running {
+            background: var(--timer-active); color: white; border-color: var(--timer-active);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);} 70% {box-shadow: 0 0 0 6px rgba(255, 152, 0, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);} }
 
         /* 进度条 */
         .progress-area { margin-top: 10px; margin-bottom: 8px; padding-right: 5px; }
@@ -203,18 +189,10 @@
         .del-section-btn:hover { opacity: 1; }
         .del-section-btn svg { width: 18px; height: 18px; fill: var(--text-main); }
 
-        /* --- 🔥 3. 分页指示点 (Pagination Dots) --- */
-        .pagination-container {
-            display: flex; justify-content: center; gap: 8px;
-            padding: 5px 0; margin-bottom: 20px;
-        }
-        .dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #ddd; transition: all 0.2s;
-        }
-        .dot.active {
-            background: var(--theme-dark); width: 16px; border-radius: 4px; /* 选中变长条 */
-        }
+        /* 分页点 */
+        .pagination-container { display: flex; justify-content: center; gap: 8px; padding: 5px 0; margin-bottom: 20px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: all 0.2s; }
+        .dot.active { background: var(--theme-dark); width: 16px; border-radius: 4px; }
 
         /* 底部全局布局 */
         .footer-controls { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; margin: 10px 0 30px 0; }
@@ -223,7 +201,15 @@
         .data-link { font-size: 13px; color: #aaa; cursor: pointer; text-decoration: none; padding: 8px; font-weight: 500; }
         .data-link:hover { color: var(--theme-dark); }
 
-        /* 灯箱/弹窗/输入框 (保持不变) */
+        /* 统计面板 */
+        .stats-panel { padding: 10px; }
+        .stats-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .stats-label { color: #666; }
+        .stats-val { font-weight: bold; color: var(--theme-dark); }
+        .stats-actions { margin-top: 20px; text-align: center; }
+        .btn-danger-outline { background: #fff; border: 1px solid var(--danger); color: var(--danger); padding: 10px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+        /* 灯箱/弹窗 */
         .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
         .lightbox-img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 4px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -255,32 +241,41 @@
     <div class="dashboard-container">
         <div id="todayDashboard" class="dashboard-block expanded">
             <div class="dash-header" onclick="toggleDashboard()">
-                <span class="dash-icon">🌟</span>
                 <div class="dash-title" contenteditable="true" onclick="event.stopPropagation()" onblur="saveDashTitle(this)">今日聚焦</div>
                 <span id="dashCount" class="dash-count">0</span>
                 <span class="dash-arrow">▼</span>
             </div>
-            <div id="dashList" class="dash-list-wrapper">
-                </div>
+            <div id="dashList" class="dash-list-wrapper"></div>
         </div>
     </div>
 
-    <div id="horizontalContainer" class="scroll-container">
-        </div>
+    <div id="horizontalContainer" class="scroll-container"></div>
 
-    <div id="paginationDots" class="pagination-container">
-        </div>
+    <div id="paginationDots" class="pagination-container"></div>
 
     <div class="footer-controls" id="globalActions" style="display:none;">
-        <span class="data-link" onclick="exportData()">备份数据</span>
+        <span class="data-link" onclick="openStats()">📊 统计</span>
         <div class="main-add-btn" onclick="addNewSection()">+</div>
-        <span class="data-link" onclick="document.getElementById('importFile').click()">恢复数据</span>
+        <span class="data-link" onclick="exportData()">备份</span>
         <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+        <span class="data-link" onclick="document.getElementById('importFile').click()">恢复</span>
     </div>
 
-    <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
-        <img id="lightboxImg" class="lightbox-img" src="" alt="Full size">
+    <div class="modal-overlay" id="statsModal">
+        <div class="modal">
+            <h3>⏱️ 专注统计</h3>
+            <div class="stats-panel" id="statsContent">
+                </div>
+            <div class="stats-actions">
+                <button class="btn-danger-outline" onclick="exportAndClearLogs()">导出并清空记录</button>
+            </div>
+            <div style="margin-top:20px; text-align:center;">
+                <span class="data-link" onclick="document.getElementById('statsModal').style.display='none'">关闭</span>
+            </div>
+        </div>
     </div>
+
+    <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()"><img id="lightboxImg" class="lightbox-img" src=""></div>
     <div class="modal-overlay" id="taskModal">
         <div class="modal">
             <h3>编辑待办</h3>
@@ -295,8 +290,7 @@
     </div>
 
     <script>
-        // --- 1. 数据库 ---
-        const DB_NAME = "Dzz_V22_Dashboard"; const STORE_NAME = "store"; let db;
+        const DB_NAME = "Dzz_V24_FocusStats"; const STORE_NAME = "store"; let db;
         const dbEngine = {
             init: () => new Promise((res, rej) => {
                 const r = indexedDB.open(DB_NAME, 1);
@@ -315,14 +309,13 @@
             })
         };
 
-        // 数据结构增加 dashboard 元数据
         let appData = {
             meta: { dashTitle: "今日聚焦", dashCollapsed: false },
-            sections: [
-                { title: " 🌱 重要紧急", collapsed: false, tasks: [] },
-                { title: " 📝 备忘录", collapsed: false, tasks: [] }
-            ]
+            sections: [{ title: " 🌱 默认清单", tasks: [] }]
         };
+
+        // 全局计时器状态
+        let activeTimer = null; // { sIdx, tIdx, startTime }
 
         window.onload = async () => {
             const d = new Date();
@@ -330,478 +323,421 @@
             try {
                 await dbEngine.init();
                 const data = await dbEngine.load();
-                if(data) {
-                    appData = data;
-                    // 兼容旧数据
-                    if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false };
-                }
-                
+                if(data) { appData = data; if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false }; }
                 document.getElementById("globalActions").style.display = "flex";
-                
-                // 设置看板标题和状态
-                const dashTitleEl = document.querySelector('.dash-title');
-                dashTitleEl.innerText = appData.meta.dashTitle;
-                const dashBlock = document.getElementById("todayDashboard");
-                if(appData.meta.dashCollapsed) dashBlock.classList.add('collapsed');
-                else dashBlock.classList.add('expanded');
-
                 renderAll();
-                
-                // 初始化滚动监听
                 initScrollListener();
-
             } catch(e) { alert("Error: " + e); }
         };
 
-        // --- 🔥 核心渲染逻辑 ---
         function renderAll() {
-            // 1. 渲染横向看板
             const container = document.getElementById("horizontalContainer");
             container.innerHTML = "";
-
-            // 2. 准备今日聚合数据
             const todayTasks = [];
             const todayStart = new Date().setHours(0,0,0,0);
 
             appData.sections.forEach((section, sIdx) => {
-                // 排序
+                // 排序：有日期在前
                 section.tasks.sort((a, b) => {
-                    const getSortTime = (t) => {
-                        if(t.startDate) return new Date(t.startDate).getTime();
-                        if(t.dueDate) return new Date(t.dueDate).getTime();
-                        return 8640000000000000; 
-                    };
-                    return getSortTime(a) - getSortTime(b);
+                    const getT = t => (t.startDate ? new Date(t.startDate) : (t.dueDate ? new Date(t.dueDate) : 8640000000000000));
+                    return getT(a) - getT(b);
                 });
 
-                // 筛选今日任务
                 section.tasks.forEach((task, tIdx) => {
                     if (!task.done) {
                         let isIncluded = false;
                         const sd = task.startDate ? new Date(task.startDate).setHours(0,0,0,0) : null;
                         const dd = task.dueDate ? new Date(task.dueDate).setHours(0,0,0,0) : null;
-
-                        // 规则1：开始日期一致 (Start == Today)
+                        // 逻辑：Start<=Today<=End 或 Today<=End(无Start) 或 Today>=Due(过期)
                         if (sd && sd === todayStart) isIncluded = true;
-
-                        // 规则2：在开始和截止范围内 (Start <= Today <= End)
                         if (sd && dd && todayStart >= sd && todayStart <= dd) isIncluded = true;
-
-                        // 规则3：当日小于等于截止日期 (Today <= End)
-                        // 注意：如果只有截止日期，没有开始日期，通常认为现在就是开始，所以只要没过期都算。
-                        // 这里我们严格按用户要求：Today <= End
                         if (dd && todayStart <= dd) isIncluded = true;
-
-                        // 如果只有 Start，且 Start <= Today (已开始)，也应该算
-                        // 但根据用户描述的三种情况，主要涵盖了这三点。我们取并集。
+                        if (dd && todayStart > dd) isIncluded = true; // 过期也显示
                         
-                        if(isIncluded) {
-                            todayTasks.push({task, sIdx, tIdx});
-                        }
+                        if(isIncluded) todayTasks.push({task, sIdx, tIdx});
                     }
                 });
 
-                // 创建看板板块
                 const block = document.createElement("div");
                 block.className = "section-block";
-                block.dataset.idx = sIdx;
-
-                const total = section.tasks.length;
-                const doneCount = section.tasks.filter(t => t.done).length;
-
-                // 板块 Header
-                const header = document.createElement("div");
-                header.className = "section-header-row";
-                header.innerHTML = `
-                    <div class="sec-title-group">
-                        <div class="section-title" contenteditable="true" onclick="event.stopPropagation()">${section.title}</div>
-                        <div class="section-count">${doneCount}/${total}</div>
-                    </div>
-                    <div class="del-section-btn" onclick="deleteSection(${sIdx})">
-                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                block.innerHTML = `
+                    <div class="section-header-row">
+                        <div class="sec-title-group">
+                            <div class="section-title" contenteditable="true" onblur="appData.sections[${sIdx}].title=this.innerText;updateAndSave()">${section.title}</div>
+                            <div class="section-count">${section.tasks.filter(t=>t.done).length}/${section.tasks.length}</div>
+                        </div>
+                        <div class="del-section-btn" onclick="deleteSection(${sIdx})"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>
                     </div>
                 `;
-                header.querySelector('.section-title').onblur = function() {
-                    appData.sections[sIdx].title = this.innerText; updateAndSave();
-                };
-                block.appendChild(header);
-
-                // 任务列表
+                
                 const list = document.createElement("div");
                 list.className = "task-list-area";
                 list.dataset.sIdx = sIdx;
-
                 section.tasks.forEach((task, tIdx) => {
-                    if(!task.done) {
-                        const el = createTaskElement(task, sIdx, tIdx);
-                        list.appendChild(el);
-                    }
+                    if(!task.done) list.appendChild(createTaskElement(task, sIdx, tIdx, false));
                 });
-
-                new Sortable(list, {
-                    group: 'dzz', animation: 150, delay: 200, delayOnTouchOnly: true,
-                    onEnd: (evt) => handleSort(evt)
-                });
-                
+                new Sortable(list, { group: 'dzz', animation: 150, delay: 200, delayOnTouchOnly: true, onEnd: handleSort });
                 block.appendChild(list);
 
-                // 已完成
                 const doneTasks = section.tasks.filter(t => t.done);
                 if(doneTasks.length > 0) {
                     const doneSec = document.createElement("div");
                     doneSec.className = "completed-section";
-                    doneSec.innerHTML = `
-                        <div class="completed-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'">
-                            <span>已完成</span>
-                            <span class="clear-btn" onclick="event.stopPropagation(); clearDone(${sIdx})">Clear</span>
-                        </div>
-                        <div class="completed-list" style="display:none; margin-top:5px;"></div>
-                    `;
-                    const doneList = doneSec.querySelector('.completed-list');
-                    section.tasks.forEach((task, tIdx) => {
-                        if(task.done) doneList.appendChild(createTaskElement(task, sIdx, tIdx));
-                    });
+                    doneSec.innerHTML = `<div class="completed-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><span>已完成</span><span class="clear-btn" onclick="event.stopPropagation();clearDone(${sIdx})">Clear</span></div><div class="completed-list" style="display:none;margin-top:5px;"></div>`;
+                    const dl = doneSec.querySelector('.completed-list');
+                    section.tasks.forEach((task, tIdx) => { if(task.done) dl.appendChild(createTaskElement(task, sIdx, tIdx, false)); });
                     block.appendChild(doneSec);
                 }
-
-                // 添加按钮
                 const addBtn = document.createElement("div");
                 addBtn.className = "add-btn-circle";
                 addBtn.innerHTML = "+";
                 addBtn.onclick = () => openModal(sIdx);
                 block.appendChild(addBtn);
-
                 container.appendChild(block);
             });
 
-            // 3. 渲染今日聚焦
+            // 渲染 Dashboard
             const dashList = document.getElementById("dashList");
-            const dashCount = document.getElementById("dashCount");
+            document.getElementById("dashCount").innerText = todayTasks.length;
             dashList.innerHTML = "";
-            dashCount.innerText = todayTasks.length;
-            
             if (todayTasks.length > 0) {
-                todayTasks.forEach(item => {
-                    // 复用渲染函数
-                    const el = createTaskElement(item.task, item.sIdx, item.tIdx);
-                    dashList.appendChild(el);
-                });
+                todayTasks.forEach(item => dashList.appendChild(createTaskElement(item.task, item.sIdx, item.tIdx, true)));
             } else {
-                dashList.innerHTML = "<div style='text-align:center;color:#ccc;padding:10px;font-size:13px;'>今天暂无待办，去下面添加吧~</div>";
+                dashList.innerHTML = "<div style='text-align:center;color:#ccc;padding:10px;font-size:13px;'>暂无今日待办</div>";
             }
-
-            // 4. 渲染分页圆点
             renderDots();
         }
 
-        // --- 🔵 分页圆点逻辑 ---
-        function renderDots() {
-            const dotsContainer = document.getElementById("paginationDots");
-            dotsContainer.innerHTML = "";
-            appData.sections.forEach((_, idx) => {
-                const dot = document.createElement("div");
-                dot.className = "dot";
-                if(idx === 0) dot.classList.add("active"); // 默认第一个激活
-                dotsContainer.appendChild(dot);
-            });
-        }
-
-        function initScrollListener() {
-            const container = document.getElementById("horizontalContainer");
-            container.addEventListener('scroll', () => {
-                const scrollLeft = container.scrollLeft;
-                const sectionWidth = container.clientWidth * 0.88 + 15; // 估算宽度+间距
-                // 计算当前索引
-                let activeIndex = Math.round(scrollLeft / sectionWidth);
-                if (activeIndex >= appData.sections.length) activeIndex = appData.sections.length - 1;
-                
-                // 更新圆点
-                const dots = document.querySelectorAll(".dot");
-                dots.forEach((dot, idx) => {
-                    if(idx === activeIndex) dot.classList.add("active");
-                    else dot.classList.remove("active");
-                });
-            });
-        }
-
-        // --- 🌟 Dashboard 逻辑 ---
-        function toggleDashboard() {
-            const block = document.getElementById("todayDashboard");
-            if (block.classList.contains('expanded')) {
-                block.classList.remove('expanded');
-                block.classList.add('collapsed');
-                appData.meta.dashCollapsed = true;
-            } else {
-                block.classList.remove('collapsed');
-                block.classList.add('expanded');
-                appData.meta.dashCollapsed = false;
-            }
-            dbEngine.save(appData); // 保存状态
-        }
-
-        function saveDashTitle(el) {
-            appData.meta.dashTitle = el.innerText;
-            dbEngine.save(appData);
-        }
-
-        // --- 核心：任务项 HTML ---
-        function createTaskElement(task, sIdx, tIdx) {
+        // --- 核心 HTML 生成 ---
+        function createTaskElement(task, sIdx, tIdx, isDash) {
             const div = document.createElement("div");
             div.className = "task-item";
             
-            // 📅 时间轴逻辑
+            // 日期逻辑
             let dateHTML = "";
             if(task.dueDate || task.startDate) {
-                const now = new Date(); now.setHours(0,0,0,0);
-                let preTag = ""; let startTag = ""; let midTag = ""; let dueTag = ""; let postTag = "";   
-                
-                let startClass = "date-val date-gray"; 
-                let dueClass = "date-val date-gray";
-                let preBadgeClass = "badge-gray"; 
+                const now = new Date().setHours(0,0,0,0);
+                let preTag="", startTag="", midTag="", dueTag="", postTag="";
+                let startClass="date-val date-gray", dueClass="date-val date-gray", preBadgeClass="badge-gray";
 
-                // Start Date Logic
                 if(task.startDate) {
-                    const sd = new Date(task.startDate); sd.setHours(0,0,0,0);
-                    const formattedStart = `${sd.getFullYear()}.${(sd.getMonth()+1).toString().padStart(2,'0')}.${sd.getDate().toString().padStart(2,'0')}`;
-                    
+                    const sd = new Date(task.startDate).setHours(0,0,0,0);
+                    const txt = task.startDate.replace(/-/g,'.');
                     if(now < sd) {
                         const diff = Math.ceil((sd - now)/86400000);
                         preTag = `<span class="date-badge badge-green">还有 ${diff} 天</span>`;
                     } else {
-                        // 过去或今天：检查逻辑
-                        if(now.getTime() === sd.getTime()) {
-                            startClass = "date-val date-green"; // 今天绿
-                        } else {
-                            startClass = "date-val date-gray"; // 过去灰
-                        }
+                        if(now === sd) startClass = "date-val date-green";
                     }
-
                     if(task.dueDate) {
-                        const dd = new Date(task.dueDate); dd.setHours(0,0,0,0);
+                        const dd = new Date(task.dueDate).setHours(0,0,0,0);
                         if(now >= sd && now <= dd) {
                             const diff = Math.ceil((dd - now)/86400000);
-                            let txt = diff===0 ? "今天截止" : `剩 ${diff} 天`;
-                            preTag = `<span class="date-badge badge-green">${txt}</span>`;
+                            preTag = `<span class="date-badge badge-green">${diff===0?"今天截止":`剩 ${diff} 天`}</span>`;
                         }
                         const dur = Math.ceil((dd - sd)/86400000);
                         midTag = `<span class="date-badge badge-gray">共 ${dur} 天</span>`;
                     }
-                    startTag = `<span class="date-label">Start</span><span class="${startClass}">${formattedStart}</span>`;
+                    startTag = `<span class="date-label">Start</span><span class="${startClass}">${txt}</span>`;
                 }
 
-                // Deadline Logic
                 if(task.dueDate) {
-                    const dd = new Date(task.dueDate); dd.setHours(0,0,0,0);
-                    const formattedDue = `${dd.getFullYear()}.${(dd.getMonth()+1).toString().padStart(2,'0')}.${dd.getDate().toString().padStart(2,'0')}`;
+                    const dd = new Date(task.dueDate).setHours(0,0,0,0);
+                    const txt = task.dueDate.replace(/-/g,'.');
                     const diff = Math.ceil((dd - now)/86400000);
-
                     if(now > dd && !task.done) {
-                        // 过期
                         postTag = `<span class="date-badge badge-red">过期 ${Math.abs(diff)} 天</span>`;
-                        dueClass = "date-val date-gray"; 
-                    } else if (now.getTime() === dd.getTime()) {
+                        dueClass = "date-val date-gray";
+                    } else if (now === dd) {
                         if(!preTag) preTag = `<span class="date-badge badge-green">今天截止</span>`;
                         dueClass = "date-val date-green";
                     } else if (!task.startDate && !preTag && diff >= 0) {
                         preTag = `<span class="date-badge badge-green">剩 ${diff} 天</span>`;
                         dueClass = "date-val date-green";
-                    } else {
-                        if(now < dd) dueClass = "date-val date-green";
-                    }
-                    dueTag = `<span class="date-label">Deadline</span><span class="${dueClass}">${formattedDue}</span>`;
+                    } else if (now < dd) dueClass = "date-val date-green";
+                    
+                    dueTag = `<span class="date-label">Deadline</span><span class="${dueClass}">${txt}</span>`;
                 }
                 dateHTML = `<span class="date-inline-container">${preTag} ${startTag} ${midTag} ${dueTag} ${postTag}</span>`;
             }
 
-            const hasProgress = (task.targetVal && task.targetVal > 0);
-            let noteHTML = task.note ? `<span class="task-note-middle">${task.note}</span>` : '';
-            
-            let bottomContent = '';
-            if (hasProgress && !task.done) {
+            // 计时器逻辑 (仅 Dashboard 显示)
+            let timerHTML = "";
+            let timeLogsHTML = "";
+            if (isDash && !task.done) {
+                const isRunning = activeTimer && activeTimer.sIdx===sIdx && activeTimer.tIdx===tIdx;
+                timerHTML = `<div class="timer-btn ${isRunning?'running':''}" onclick="toggleTimer(${sIdx}, ${tIdx}, this)">${isRunning?'⏹':'▶'}</div>`;
+            }
+            if (task.timeLogs && task.timeLogs.length > 0) {
+                timeLogsHTML = `<div class="timer-logs-area">` + 
+                    task.timeLogs.map(l => `<span class="time-log-item">${l.display} (${l.durStr})</span>`).join('') + 
+                    `</div>`;
+            }
+
+            // 来源标签
+            let sourceHTML = isDash ? `<span class="source-tag">${appData.sections[sIdx].title.trim()}</span>` : "";
+
+            // 进度条
+            let bottomContent = "";
+            if (task.targetVal && task.targetVal > 0 && !task.done) {
                 const pct = Math.min(100, Math.round((task.currentVal / task.targetVal) * 100));
                 bottomContent = `
                     <div class="progress-area">
-                        <div class="prog-bar-track">
-                            <div class="prog-bar-fill" style="width: ${pct}%"></div>
-                            <input type="range" class="prog-slider" min="0" max="${task.targetVal}" step="${task.stepVal||1}" value="${task.currentVal}" onchange="updateProgVal(${sIdx}, ${tIdx}, this.value)">
-                        </div>
+                        <div class="prog-bar-track"><div class="prog-bar-fill" style="width: ${pct}%"></div><input type="range" class="prog-slider" min="0" max="${task.targetVal}" step="${task.stepVal||1}" value="${task.currentVal}" onchange="updateProgVal(${sIdx}, ${tIdx}, this.value)"></div>
                         <div class="prog-controls-row">
                             <div class="prog-text-display">${pct}% | ${task.currentVal}/${task.targetVal} ${task.unit||''}</div>
-                            <div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, -1)">-</div>
-                            <div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, 1)">+</div>
+                            <div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, -1)">-</div><div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, 1)">+</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
-
-            let extraHTML = `
-                ${renderSubtasks(task.subtasks, sIdx, tIdx)}
-                ${task.img ? `<img src="${task.img}" class="task-img-thumb" onclick="showLightbox('${task.img}')">` : ''}
-            `;
 
             div.innerHTML = `
                 <div class="task-row-top">
                     <div class="checkbox ${task.done?'checked':''}" onclick="toggleTask(${sIdx}, ${tIdx})"></div>
                     <div class="task-main-content">
                         <div class="title-date-inline-wrapper">
+                            ${sourceHTML}
                             <div class="task-name" onclick="openModal(${sIdx}, ${tIdx})">${task.name}</div>
                             ${dateHTML}
                         </div>
-                        ${noteHTML}
+                        ${task.note ? `<span class="task-note-middle">${task.note}</span>` : ''}
+                        ${timeLogsHTML}
                         ${bottomContent}
-                        ${extraHTML}
+                        ${renderSubtasks(task.subtasks, sIdx, tIdx)}
+                        ${task.img ? `<img src="${task.img}" class="task-img-thumb" onclick="showLightbox('${task.img}')">` : ''}
                     </div>
+                    ${timerHTML}
                     <div class="del-task-btn" onclick="delTask(${sIdx}, ${tIdx})">×</div>
                 </div>
             `;
-            
             return div;
         }
 
-        function renderSubtasks(text, sIdx, tIdx) {
+        function renderSubtasks(text, s, t) {
             if(!text) return '';
-            const lines = text.split('\n');
-            let html = '<div style="margin:4px 0;">';
-            lines.forEach((line, lineIdx) => {
-                if(!line.trim()) return;
-                const isDone = line.trim().startsWith('[x]');
-                const cleanText = line.replace(/^\[x\]|\[ \]/, '').trim();
-                html += `
-                    <div class="subtask-item" onclick="toggleSubtask(${sIdx}, ${tIdx}, ${lineIdx})">
-                        <div class="subtask-check ${isDone?'done':''}">${isDone?'✓':''}</div>
-                        <div class="subtask-text ${isDone?'done':''}">${cleanText}</div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-            return html;
+            return '<div style="margin:4px 0;">' + text.split('\n').map((l, i) => {
+                if(!l.trim()) return '';
+                const d = l.trim().startsWith('[x]');
+                return `<div class="subtask-item" onclick="toggleSubtask(${s},${t},${i})"><div class="subtask-check ${d?'done':''}">${d?'✓':''}</div><div class="subtask-text ${d?'done':''}">${l.replace(/^\[x\]|\[ \]/,'').trim()}</div></div>`;
+            }).join('') + '</div>';
         }
 
-        // --- 逻辑操作 ---
-        function updateAndSave() { renderAll(); dbEngine.save(appData); }
-        function toggleSection(idx) { /* 横向模式不折叠子板块 */ }
-        function toggleTask(s, t) { if(!appData.sections[s]||!appData.sections[s].tasks[t])return; appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); }
-        function delTask(s, t) { if(!appData.sections[s]||!appData.sections[s].tasks[t])return; appData.sections[s].tasks.splice(t, 1); updateAndSave(); }
-        function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t => !t.done); updateAndSave(); }
-        function updateProgVal(s, t, val) { if(!appData.sections[s].tasks[t])return; appData.sections[s].tasks[t].currentVal = parseFloat(val); updateAndSave(); }
-        function adjustProg(s, t, dir) { 
-            if(!appData.sections[s].tasks[t])return; const task=appData.sections[s].tasks[t]; const step=parseFloat(task.stepVal)||1; 
-            let val=parseFloat(task.currentVal)||0; val+=(dir*step); if(val<0)val=0; if(val>task.targetVal)val=task.targetVal; task.currentVal=val; updateAndSave(); 
+        // --- 计时器功能 ---
+        function toggleTimer(sIdx, tIdx, btn) {
+            event.stopPropagation();
+            if (activeTimer) {
+                // 停止当前计时
+                const now = new Date();
+                const start = activeTimer.startTime;
+                const diffMs = now - start;
+                const minutes = Math.ceil(diffMs / 60000); // 向上取整分钟
+                
+                // 格式化时间 14:00 - 14:25
+                const fmt = d => `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                const display = `${fmt(start)}-${fmt(now)}`;
+                
+                // 保存记录
+                const task = appData.sections[activeTimer.sIdx].tasks[activeTimer.tIdx];
+                if (!task.timeLogs) task.timeLogs = [];
+                task.timeLogs.push({ 
+                    start: start.getTime(), end: now.getTime(), 
+                    display: display, durStr: `${minutes}m` 
+                });
+                
+                activeTimer = null;
+                updateAndSave();
+                
+                // 如果点击的是同一个按钮，就结束了。如果是别的，下面会开启新的。
+                if (activeTimer && activeTimer.sIdx === sIdx && activeTimer.tIdx === tIdx) return;
+            }
+
+            if (!btn.classList.contains('running')) {
+                // 开始新计时
+                activeTimer = { sIdx, tIdx, startTime: new Date() };
+                renderAll(); // 刷新UI显示运行状态
+            }
         }
-        function toggleSubtask(s, t, l) {
-            if(!appData.sections[s].tasks[t])return; let lines=appData.sections[s].tasks[t].subtasks.split('\n'); let line=lines[l];
-            if(line.trim().startsWith('[x]')) lines[l]=line.replace('[x]','').trim(); else lines[l]='[x] '+line.trim();
-            appData.sections[s].tasks[t].subtasks=lines.join('\n'); updateAndSave();
+
+        // --- 统计功能 ---
+        function openStats() {
+            const panel = document.getElementById("statsContent");
+            panel.innerHTML = "";
+            let totalMs = 0;
+            const dayMap = {}; // yyyy-mm-dd -> ms
+
+            appData.sections.forEach(sec => {
+                sec.tasks.forEach(task => {
+                    if (task.timeLogs) {
+                        task.timeLogs.forEach(log => {
+                            const dur = log.end - log.start;
+                            totalMs += dur;
+                            const dateKey = new Date(log.start).toISOString().slice(0,10);
+                            dayMap[dateKey] = (dayMap[dateKey] || 0) + dur;
+                        });
+                    }
+                });
+            });
+
+            const msToHm = ms => {
+                const h = Math.floor(ms / 3600000);
+                const m = Math.floor((ms % 3600000) / 60000);
+                return `${h}小时 ${m}分钟`;
+            };
+
+            // 渲染统计
+            let html = `<div class="stats-row"><span class="stats-label">总专注时长</span><span class="stats-val">${msToHm(totalMs)}</span></div>`;
+            
+            // 最近7天
+            const today = new Date();
+            for(let i=0; i<7; i++) {
+                const d = new Date(); d.setDate(today.getDate() - i);
+                const k = d.toISOString().slice(0,10);
+                if(dayMap[k]) {
+                    html += `<div class="stats-row"><span class="stats-label">${k}</span><span class="stats-val">${msToHm(dayMap[k])}</span></div>`;
+                }
+            }
+            panel.innerHTML = html || "<div style='text-align:center;color:#999'>暂无专注记录</div>";
+            document.getElementById("statsModal").style.display = "flex";
+        }
+
+        function exportAndClearLogs() {
+            if(!confirm("确定导出并清空所有专注记录吗？\n这不会删除任务，只会清空时间日志。")) return;
+            
+            // 导出
+            const logs = [];
+            appData.sections.forEach(sec => {
+                sec.tasks.forEach(task => {
+                    if(task.timeLogs && task.timeLogs.length) {
+                        logs.push({ task: task.name, logs: task.timeLogs });
+                        task.timeLogs = []; // 清空
+                    }
+                });
+            });
+            
+            const b = new Blob([JSON.stringify(logs, null, 2)], {type:"application/json"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `专注记录备份_${new Date().toISOString().slice(0,10)}.json`; a.click();
+            
+            updateAndSave();
+            openStats(); // 刷新统计面板
+        }
+
+        // --- 基础逻辑 ---
+        function updateAndSave() { renderAll(); dbEngine.save(appData); }
+        function renderDots() {
+            const c = document.getElementById("paginationDots"); c.innerHTML="";
+            appData.sections.forEach((_,i)=>{ const d=document.createElement("div"); d.className="dot"; if(i===0)d.classList.add("active"); c.appendChild(d); });
+        }
+        function initScrollListener() {
+            const c = document.getElementById("horizontalContainer");
+            c.addEventListener('scroll', ()=>{
+                const w = c.clientWidth*0.9 + 15;
+                let i = Math.round(c.scrollLeft/w); if(i>=appData.sections.length)i=appData.sections.length-1;
+                document.querySelectorAll(".dot").forEach((d,idx)=>d.classList.toggle("active", idx===i));
+            });
+        }
+        function toggleDashboard() {
+            const b = document.getElementById("todayDashboard");
+            b.classList.toggle('collapsed'); b.classList.toggle('expanded');
+            appData.meta.dashCollapsed = b.classList.contains('collapsed');
+            dbEngine.save(appData);
+        }
+        function saveDashTitle(el) { appData.meta.dashTitle = el.innerText; dbEngine.save(appData); }
+        
+        function toggleTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); } }
+        function delTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks.splice(t,1); updateAndSave(); } }
+        function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t=>!t.done); updateAndSave(); }
+        function updateProgVal(s,t,v) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].currentVal = parseFloat(v); updateAndSave(); } }
+        function adjustProg(s,t,d) { 
+            const task = appData.sections[s]?.tasks[t]; if(!task) return;
+            let v = (parseFloat(task.currentVal)||0) + (d*(parseFloat(task.stepVal)||1));
+            if(v<0)v=0; if(v>task.targetVal)v=task.targetVal; task.currentVal=v; updateAndSave();
+        }
+        function toggleSubtask(s,t,l) {
+            const task = appData.sections[s]?.tasks[t]; if(!task) return;
+            let lines = task.subtasks.split('\n');
+            lines[l] = lines[l].trim().startsWith('[x]') ? lines[l].replace('[x]','').trim() : '[x] '+lines[l].trim();
+            task.subtasks = lines.join('\n'); updateAndSave();
         }
         function handleSort(evt) {
-            const oldS=parseInt(evt.from.dataset.sIdx), newS=parseInt(evt.to.dataset.sIdx), oldI=evt.oldIndex, newI=evt.newIndex;
-            const item = appData.sections[oldS].tasks.filter(t=>!t.done)[oldI]; if(!item)return updateAndSave();
-            appData.sections[oldS].tasks.splice(appData.sections[oldS].tasks.indexOf(item),1);
-            const targetList = appData.sections[newS].tasks.filter(t=>!t.done);
-            if(newI>=targetList.length) appData.sections[newS].tasks.push(item);
-            else appData.sections[newS].tasks.splice(appData.sections[newS].tasks.indexOf(targetList[newI]),0,item);
+            // 横向模式暂不处理复杂的跨列拖拽排序保存，依赖自动排序修正
             updateAndSave();
         }
 
         function showLightbox(src) { document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').style.display='flex'; }
         function closeLightbox() { document.getElementById('lightbox').style.display='none'; }
-
-        // --- 弹窗逻辑 ---
-        function openModal(sIdx, tIdx = null) {
-            document.getElementById("editSectionIndex").value = sIdx;
-            document.getElementById("editTaskIndex").value = tIdx !== null ? tIdx : -1;
+        
+        function openModal(s, t=null) {
+            document.getElementById("editSectionIndex").value = s;
+            document.getElementById("editTaskIndex").value = t!==null?t:-1;
             document.getElementById("taskModal").style.display = "flex";
             const box = document.getElementById("imgPreviewContainer");
-            const img = document.getElementById("imgPreview");
-
-            if(tIdx !== null) {
-                const task = appData.sections[sIdx].tasks[tIdx];
+            
+            if(t!==null) {
+                const task = appData.sections[s].tasks[t];
                 document.getElementById("inputName").value = task.name;
-                document.getElementById("inputNote").value = task.note || "";
-                document.getElementById("inputStartDate").value = task.startDate || "";
-                document.getElementById("inputDueDate").value = task.dueDate || "";
-                document.getElementById("inputCurrent").value = task.currentVal || "";
-                document.getElementById("inputTarget").value = task.targetVal || "";
-                document.getElementById("inputUnit").value = task.unit || "";
-                document.getElementById("inputStep").value = task.stepVal || "";
-                document.getElementById("inputSubtasks").value = task.subtasks || "";
-                
-                document.getElementById("imgBase64").value = task.img || "";
-                if(task.img) { img.src = task.img; box.style.display = 'inline-block'; }
-                else { box.style.display = 'none'; }
+                document.getElementById("inputNote").value = task.note||"";
+                document.getElementById("inputStartDate").value = task.startDate||"";
+                document.getElementById("inputDueDate").value = task.dueDate||"";
+                document.getElementById("inputCurrent").value = task.currentVal||"";
+                document.getElementById("inputTarget").value = task.targetVal||"";
+                document.getElementById("inputUnit").value = task.unit||"";
+                document.getElementById("inputStep").value = task.stepVal||"";
+                document.getElementById("inputSubtasks").value = task.subtasks||"";
+                document.getElementById("imgBase64").value = task.img||"";
+                if(task.img) { document.getElementById("imgPreview").src=task.img; box.style.display="inline-block"; } else box.style.display="none";
             } else {
-                document.querySelectorAll('.form-input').forEach(i => i.value = "");
-                document.getElementById("imgBase64").value = "";
-                box.style.display = 'none';
+                document.querySelectorAll('.form-input').forEach(i=>i.value="");
+                document.getElementById("imgBase64").value=""; box.style.display="none";
             }
         }
         function closeModal() { document.getElementById("taskModal").style.display = "none"; }
-
         function handleImageCompressed(input) {
             if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
+                const r = new FileReader();
+                r.onload = e => {
                     const img = new Image(); img.src = e.target.result;
-                    img.onload = function() {
-                        const c = document.createElement('canvas'), ctx = c.getContext('2d');
-                        let w=img.width, h=img.height; const max=800;
-                        if(w>max){ h=Math.round(h*max/w); w=max; } c.width=w; c.height=h;
+                    img.onload = () => {
+                        const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+                        let w=img.width, h=img.height; if(w>800){h=Math.round(h*800/w);w=800;} c.width=w; c.height=h;
                         ctx.drawImage(img,0,0,w,h);
-                        const base64 = c.toDataURL('image/jpeg', 0.7);
-                        document.getElementById("imgBase64").value = base64;
-                        document.getElementById("imgPreview").src = base64;
+                        const b64 = c.toDataURL('image/jpeg', 0.7);
+                        document.getElementById("imgBase64").value = b64;
+                        document.getElementById("imgPreview").src = b64;
                         document.getElementById("imgPreviewContainer").style.display = "inline-block";
                     }
-                }
-                reader.readAsDataURL(file);
+                }; r.readAsDataURL(input.files[0]);
             }
         }
-
-        // 删除图片
-        function deleteTaskImg() {
-            document.getElementById("imgBase64").value = "";
-            document.getElementById("imgPreviewContainer").style.display = "none";
-            document.getElementById("inputImg").value = "";
-        }
+        function deleteTaskImg() { document.getElementById("imgBase64").value=""; document.getElementById("imgPreviewContainer").style.display="none"; }
 
         async function saveTask() {
-            const sIdx = parseInt(document.getElementById("editSectionIndex").value);
-            const tIdx = parseInt(document.getElementById("editTaskIndex").value);
+            const s = parseInt(document.getElementById("editSectionIndex").value);
+            const t = parseInt(document.getElementById("editTaskIndex").value);
             const task = {
                 name: document.getElementById("inputName").value.trim(),
                 note: document.getElementById("inputNote").value,
                 startDate: document.getElementById("inputStartDate").value,
                 dueDate: document.getElementById("inputDueDate").value,
-                currentVal: parseFloat(document.getElementById("inputCurrent").value) || 0,
-                targetVal: parseFloat(document.getElementById("inputTarget").value) || 0,
+                currentVal: parseFloat(document.getElementById("inputCurrent").value)||0,
+                targetVal: parseFloat(document.getElementById("inputTarget").value)||0,
                 unit: document.getElementById("inputUnit").value,
-                stepVal: parseFloat(document.getElementById("inputStep").value) || 1,
+                stepVal: parseFloat(document.getElementById("inputStep").value)||1,
                 subtasks: document.getElementById("inputSubtasks").value,
                 img: document.getElementById("imgBase64").value,
                 done: false,
-                id: tIdx !== -1 ? appData.sections[sIdx].tasks[tIdx].id : Date.now()
+                id: t!==-1 ? appData.sections[s].tasks[t].id : Date.now(),
+                timeLogs: t!==-1 ? (appData.sections[s].tasks[t].timeLogs||[]) : []
             };
             if(!task.name) return alert("写个名字吧");
-            if(tIdx !== -1) {
-                task.done = appData.sections[sIdx].tasks[tIdx].done;
-                appData.sections[sIdx].tasks[tIdx] = task;
-            } else { appData.sections[sIdx].tasks.push(task); }
+            if(t!==-1) { task.done = appData.sections[s].tasks[t].done; appData.sections[s].tasks[t] = task; }
+            else appData.sections[s].tasks.push(task);
             updateAndSave(); closeModal();
         }
 
-        function addNewSection() { appData.sections.push({title:"新板块", collapsed:false, tasks:[]}); updateAndSave(); }
-        function deleteSection(idx) { if(confirm("删除板块?")) { appData.sections.splice(idx,1); updateAndSave(); } }
-        async function exportData() {
-            const b = new Blob([JSON.stringify(appData)], {type:"application/json"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `Dzz备份.json`; a.click();
-        }
-        function importData(inp) {
-            const f = inp.files[0]; if(!f) return;
-            const r = new FileReader();
-            r.onload = async e => { appData = JSON.parse(e.target.result); await updateAndSave(); alert("已恢复"); };
-            r.readAsText(f);
-        }
+        function addNewSection() { appData.sections.push({title:"新板块", tasks:[]}); updateAndSave(); }
+        function deleteSection(i) { if(confirm("删除板块?")) { appData.sections.splice(i,1); updateAndSave(); } }
+        async function exportData() { const b = new Blob([JSON.stringify(appData)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `Dzz备份.json`; a.click(); }
+        function importData(i) { const f = i.files[0]; if(!f)return; const r = new FileReader(); r.onload = async e => { appData = JSON.parse(e.target.result); await updateAndSave(); alert("已恢复"); }; r.readAsText(f); }
     </script>
 </body>
 </html>

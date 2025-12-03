@@ -6,13 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dzz">
-    <title>Dzz Kanban</title>
+    <title>Dzz</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* --- 🎨 配色 (保持 Dzz 5.16 风格) --- */
+        /* --- 🎨 配色 --- */
         :root {
-            --bg-color: #F2F4F6;       /* 背景稍微加深一点，突出卡片 */
+            --bg-color: #F2F4F6;
             --card-bg: #FFFFFF;
             --theme-dark: #556b2f;
             --theme-light: #eaf1ea;
@@ -34,7 +34,7 @@
             padding-bottom: 40px; 
             color: var(--text-main);
             user-select: none; -webkit-user-select: none;
-            overflow-x: hidden; /* 防止整体页面横向晃动 */
+            overflow-x: hidden; 
         }
 
         /* 顶部 Header */
@@ -48,55 +48,73 @@
         h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--theme-dark); letter-spacing: 1px;}
         .date-str { font-size: 11px; color: var(--text-sub); }
 
-        /* --- 🔥 核心布局重构 --- */
-
-        /* 1. 顶部今日聚焦模块 */
+        /* --- 🔥 1. 今日聚焦模块 (可折叠/改名) --- */
         .dashboard-container {
-            padding: 15px 15px 0 15px;
+            padding: 15px 15px 5px 15px;
         }
         .dashboard-block {
             background: #fff;
             border-radius: 16px;
-            padding: 15px;
-            border: 2px solid var(--theme-dark); /* 加个边框突出 */
+            padding: 0; /* padding移给子元素以便折叠 */
+            border: 2px solid var(--theme-dark); 
             box-shadow: 0 4px 15px rgba(85, 107, 47, 0.15);
-            margin-bottom: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
+        
+        /* 标题栏 */
         .dash-header {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-            padding-bottom: 8px; border-bottom: 1px solid #eee;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 15px;
+            background: rgba(234, 241, 234, 0.3);
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
         }
+        .dashboard-block.expanded .dash-header {
+            border-bottom: 1px solid #eee;
+        }
+
         .dash-icon { font-size: 18px; }
-        .dash-title { font-size: 16px; font-weight: 800; color: var(--theme-dark); }
+        .dash-title { 
+            font-size: 16px; font-weight: 800; color: var(--theme-dark); 
+            flex: 1; outline: none; border-bottom: 1px dashed transparent;
+        }
+        .dash-title:focus { border-bottom: 1px dashed var(--theme-dark); }
         .dash-count { font-size: 12px; background: var(--theme-dark); color: white; padding: 2px 8px; border-radius: 10px; }
         
-        /* 2. 横向滑动容器 */
+        .dash-arrow { 
+            font-size: 12px; color: var(--text-sub); transition: 0.3s; margin-left: 8px;
+        }
+        /* 折叠状态箭头旋转 */
+        .dashboard-block.collapsed .dash-arrow { transform: rotate(-90deg); }
+        .dashboard-block.collapsed .dash-list-wrapper { display: none; }
+
+        .dash-list-wrapper { padding: 5px 10px 10px 10px; min-height: 10px;}
+
+        /* --- 🔥 2. 横向滑动容器 --- */
         .scroll-container {
             display: flex;
-            overflow-x: auto; /* 开启横向滚动 */
-            scroll-snap-type: x mandatory; /* 滚动吸附 */
+            overflow-x: auto; 
+            scroll-snap-type: x mandatory; 
             gap: 15px;
-            padding: 10px 15px 40px 15px; /* 底部留白给阴影 */
-            -webkit-overflow-scrolling: touch; /* iOS顺滑滚动 */
+            padding: 10px 15px 20px 15px; 
+            -webkit-overflow-scrolling: touch; 
         }
-        /* 隐藏滚动条 */
         .scroll-container::-webkit-scrollbar { display: none; }
 
-        /* 3. 板块卡片 (横向排列) */
+        /* 板块卡片 */
         .section-block { 
             background: var(--card-bg); 
             border-radius: 16px; 
             padding: 0 0 12px 0; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
             overflow: hidden;
-            /* 🔥 关键属性 */
-            min-width: 88vw; /* 每个板块占屏幕宽度的 88% */
-            scroll-snap-align: center; /* 停止时居中 */
-            height: fit-content; /* 高度自适应 */
-            flex-shrink: 0; /* 防止被挤压 */
+            min-width: 88vw; 
+            scroll-snap-align: center; 
+            height: fit-content; 
+            flex-shrink: 0; 
         }
 
-        /* 以下保持 Dzz 5.16 的精致 UI */
         .section-header-row {
             display: flex; justify-content: space-between; align-items: stretch;
             border-bottom: 1px solid var(--theme-light);
@@ -110,7 +128,7 @@
         .section-count { font-size: 11px; color: #fff; background: var(--theme-dark); padding: 2px 7px; border-radius: 10px; opacity: 0.8;}
         
         /* 任务列表 */
-        .task-list-area { min-height: 20px; padding: 0 10px; } /* 加padding防止贴边 */
+        .task-list-area { min-height: 20px; padding: 0 10px; }
         .task-item { 
             border-bottom: 1px solid #f5f5f5; 
             padding: 14px 2px;
@@ -119,7 +137,6 @@
         }
 
         .task-row-top { display: flex; align-items: flex-start; }
-        
         .checkbox { 
             width: 18px; height: 18px; 
             border: 2px solid var(--theme-dark); 
@@ -133,7 +150,6 @@
 
         .task-main-content { flex: 1; min-width: 0; line-height: 1.5; }
         .title-date-inline-wrapper { display: inline; }
-        
         .task-name { font-size: 15px; color: var(--text-main); font-weight: 500; margin-right: 8px; cursor: pointer; display: inline; }
         
         /* 日期样式 */
@@ -177,23 +193,31 @@
         .subtask-text.done { text-decoration: line-through; color: #bbb; }
 
         /* 已完成 */
-        .completed-section { margin-top: 15px; padding-top: 0; border-top: none; padding: 0 10px; /* 对齐列表 */ }
+        .completed-section { margin-top: 15px; padding-top: 0; border-top: none; padding: 0 10px; }
         .completed-header { font-size: 12px; color: #aaa; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .clear-btn { background: #fff; border: 1px solid #eee; color: var(--danger); font-size: 10px; padding: 2px 8px; border-radius: 12px; }
 
-        .add-btn-circle {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: var(--theme-light); color: var(--theme-dark);
-            display: flex; align-items: center; justify-content: center;
-            margin: 15px auto 0; cursor: pointer; font-size: 20px; font-weight: 300; 
-        }
+        .add-btn-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--theme-light); color: var(--theme-dark); display: flex; align-items: center; justify-content: center; margin: 15px auto 0; cursor: pointer; font-size: 20px; font-weight: 300; }
 
         .del-section-btn { width: 52px; display: flex; align-items: center; justify-content: center; opacity: 0.3; transition: 0.2s; cursor: pointer; border-left: 1px solid transparent; }
         .del-section-btn:hover { opacity: 1; }
         .del-section-btn svg { width: 18px; height: 18px; fill: var(--text-main); }
 
+        /* --- 🔥 3. 分页指示点 (Pagination Dots) --- */
+        .pagination-container {
+            display: flex; justify-content: center; gap: 8px;
+            padding: 5px 0; margin-bottom: 20px;
+        }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ddd; transition: all 0.2s;
+        }
+        .dot.active {
+            background: var(--theme-dark); width: 16px; border-radius: 4px; /* 选中变长条 */
+        }
+
         /* 底部全局布局 */
-        .footer-controls { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; margin: 20px 0 30px 0; }
+        .footer-controls { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; margin: 10px 0 30px 0; }
         .main-add-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--theme-dark); color: white; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 300; cursor: pointer; box-shadow: 0 6px 16px rgba(85, 107, 47, 0.2); transition: transform 0.2s; }
         .main-add-btn:active { transform: scale(0.92); }
         .data-link { font-size: 13px; color: #aaa; cursor: pointer; text-decoration: none; padding: 8px; font-weight: 500; }
@@ -229,18 +253,22 @@
     </div>
 
     <div class="dashboard-container">
-        <div id="todayDashboard" class="dashboard-block" style="display:none;">
-            <div class="dash-header">
+        <div id="todayDashboard" class="dashboard-block expanded">
+            <div class="dash-header" onclick="toggleDashboard()">
                 <span class="dash-icon">🌟</span>
-                <span class="dash-title">今日聚焦</span>
+                <div class="dash-title" contenteditable="true" onclick="event.stopPropagation()" onblur="saveDashTitle(this)">今日聚焦</div>
                 <span id="dashCount" class="dash-count">0</span>
+                <span class="dash-arrow">▼</span>
             </div>
-            <div id="dashList" class="task-list-area">
+            <div id="dashList" class="dash-list-wrapper">
                 </div>
         </div>
     </div>
 
     <div id="horizontalContainer" class="scroll-container">
+        </div>
+
+    <div id="paginationDots" class="pagination-container">
         </div>
 
     <div class="footer-controls" id="globalActions" style="display:none;">
@@ -253,67 +281,22 @@
     <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
         <img id="lightboxImg" class="lightbox-img" src="" alt="Full size">
     </div>
-
     <div class="modal-overlay" id="taskModal">
         <div class="modal">
             <h3>编辑待办</h3>
-            <input type="hidden" id="editTaskIndex">
-            <input type="hidden" id="editSectionIndex">
-            
-            <div class="form-group">
-                <input type="text" id="inputName" class="form-input" placeholder="待办内容">
-            </div>
-            
-            <div class="form-group">
-                <textarea id="inputNote" class="form-input" placeholder="添加备注..." style="height:50px"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">时间安排</label>
-                <div class="row-inputs">
-                    <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputStartDate" class="form-input" placeholder="开始日期">
-                    <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputDueDate" class="form-input" placeholder="截止日期">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">进度目标</label>
-                <div class="row-inputs" style="margin-bottom:8px;">
-                    <input type="number" id="inputCurrent" class="form-input" placeholder="当前(0)">
-                    <input type="number" id="inputTarget" class="form-input" placeholder="目标">
-                </div>
-                <div class="row-inputs">
-                    <input type="text" id="inputUnit" class="form-input" placeholder="单位(页)">
-                    <input type="number" id="inputStep" class="form-input" placeholder="步长(1)" value="1">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">子任务 & 图片</label>
-                <textarea id="inputSubtasks" class="form-input" placeholder="子任务 (每行一个)"></textarea>
-                
-                <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
-                    <label for="inputImg" style="background:#F2F4F2; padding:8px 12px; border-radius:8px; font-size:12px; color:#666; cursor:pointer;">📷 上传图片</label>
-                    <input type="file" id="inputImg" accept="image/*" style="display:none" onchange="handleImageCompressed(this)">
-                </div>
-
-                <div id="imgPreviewContainer" class="img-preview-box" style="display:none">
-                    <img id="imgPreview" class="preview-img" src="">
-                    <div class="del-img-badge" onclick="deleteTaskImg()">×</div>
-                </div>
-                <input type="hidden" id="imgBase64">
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn btn-save" onclick="saveTask()">完成</button>
-            </div>
+            <input type="hidden" id="editTaskIndex"><input type="hidden" id="editSectionIndex">
+            <div class="form-group"><input type="text" id="inputName" class="form-input" placeholder="待办内容"></div>
+            <div class="form-group"><textarea id="inputNote" class="form-input" placeholder="添加备注..." style="height:50px"></textarea></div>
+            <div class="form-group"><label class="form-label">时间安排</label><div class="row-inputs"><input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputStartDate" class="form-input" placeholder="开始日期"><input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputDueDate" class="form-input" placeholder="截止日期"></div></div>
+            <div class="form-group"><label class="form-label">进度目标</label><div class="row-inputs" style="margin-bottom:8px;"><input type="number" id="inputCurrent" class="form-input" placeholder="当前(0)"><input type="number" id="inputTarget" class="form-input" placeholder="目标"></div><div class="row-inputs"><input type="text" id="inputUnit" class="form-input" placeholder="单位(页)"><input type="number" id="inputStep" class="form-input" placeholder="步长(1)" value="1"></div></div>
+            <div class="form-group"><label class="form-label">子任务 & 图片</label><textarea id="inputSubtasks" class="form-input" placeholder="子任务 (每行一个)"></textarea><div style="margin-top:10px; display:flex; align-items:center; gap:10px;"><label for="inputImg" style="background:#F2F4F2; padding:8px 12px; border-radius:8px; font-size:12px; color:#666; cursor:pointer;">📷 上传图片</label><input type="file" id="inputImg" accept="image/*" style="display:none" onchange="handleImageCompressed(this)"></div><div id="imgPreviewContainer" class="img-preview-box" style="display:none"><img id="imgPreview" class="preview-img" src=""><div class="del-img-badge" onclick="deleteTaskImg()">×</div></div><input type="hidden" id="imgBase64"></div>
+            <div class="modal-buttons"><button class="btn btn-cancel" onclick="closeModal()">取消</button><button class="btn btn-save" onclick="saveTask()">完成</button></div>
         </div>
     </div>
 
     <script>
         // --- 1. 数据库 ---
-        const DB_NAME = "Dzz_V6_Kanban"; const STORE_NAME = "store"; let db;
+        const DB_NAME = "Dzz_V22_Dashboard"; const STORE_NAME = "store"; let db;
         const dbEngine = {
             init: () => new Promise((res, rej) => {
                 const r = indexedDB.open(DB_NAME, 1);
@@ -332,10 +315,11 @@
             })
         };
 
+        // 数据结构增加 dashboard 元数据
         let appData = {
+            meta: { dashTitle: "今日聚焦", dashCollapsed: false },
             sections: [
                 { title: " 🌱 重要紧急", collapsed: false, tasks: [] },
-                { title: " 🌳 日常琐事", collapsed: false, tasks: [] },
                 { title: " 📝 备忘录", collapsed: false, tasks: [] }
             ]
         };
@@ -346,10 +330,26 @@
             try {
                 await dbEngine.init();
                 const data = await dbEngine.load();
-                if(data) appData = data;
-                // 显示容器
+                if(data) {
+                    appData = data;
+                    // 兼容旧数据
+                    if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false };
+                }
+                
                 document.getElementById("globalActions").style.display = "flex";
+                
+                // 设置看板标题和状态
+                const dashTitleEl = document.querySelector('.dash-title');
+                dashTitleEl.innerText = appData.meta.dashTitle;
+                const dashBlock = document.getElementById("todayDashboard");
+                if(appData.meta.dashCollapsed) dashBlock.classList.add('collapsed');
+                else dashBlock.classList.add('expanded');
+
                 renderAll();
+                
+                // 初始化滚动监听
+                initScrollListener();
+
             } catch(e) { alert("Error: " + e); }
         };
 
@@ -377,21 +377,25 @@
                 // 筛选今日任务
                 section.tasks.forEach((task, tIdx) => {
                     if (!task.done) {
-                        let isToday = false;
-                        if (task.startDate) {
-                            const sd = new Date(task.startDate).setHours(0,0,0,0);
-                            if (todayStart >= sd) isToday = true; // 已开始或今天开始
-                        }
-                        if (task.dueDate) {
-                            const dd = new Date(task.dueDate).setHours(0,0,0,0);
-                            if (todayStart >= dd) isToday = true; // 今天截止或已过期
-                            if (task.startDate) {
-                                const sd = new Date(task.startDate).setHours(0,0,0,0);
-                                if(todayStart >= sd && todayStart <= dd) isToday = true; // 期间
-                            }
-                        }
-                        // 如果任务有日期且符合条件，加入今日列表
-                        if(isToday) {
+                        let isIncluded = false;
+                        const sd = task.startDate ? new Date(task.startDate).setHours(0,0,0,0) : null;
+                        const dd = task.dueDate ? new Date(task.dueDate).setHours(0,0,0,0) : null;
+
+                        // 规则1：开始日期一致 (Start == Today)
+                        if (sd && sd === todayStart) isIncluded = true;
+
+                        // 规则2：在开始和截止范围内 (Start <= Today <= End)
+                        if (sd && dd && todayStart >= sd && todayStart <= dd) isIncluded = true;
+
+                        // 规则3：当日小于等于截止日期 (Today <= End)
+                        // 注意：如果只有截止日期，没有开始日期，通常认为现在就是开始，所以只要没过期都算。
+                        // 这里我们严格按用户要求：Today <= End
+                        if (dd && todayStart <= dd) isIncluded = true;
+
+                        // 如果只有 Start，且 Start <= Today (已开始)，也应该算
+                        // 但根据用户描述的三种情况，主要涵盖了这三点。我们取并集。
+                        
+                        if(isIncluded) {
                             todayTasks.push({task, sIdx, tIdx});
                         }
                     }
@@ -434,7 +438,6 @@
                     }
                 });
 
-                // 拖拽
                 new Sortable(list, {
                     group: 'dzz', animation: 150, delay: 200, delayOnTouchOnly: true,
                     onEnd: (evt) => handleSort(evt)
@@ -471,23 +474,74 @@
                 container.appendChild(block);
             });
 
-            // 3. 渲染今日聚合
-            const dashBlock = document.getElementById("todayDashboard");
+            // 3. 渲染今日聚焦
             const dashList = document.getElementById("dashList");
             const dashCount = document.getElementById("dashCount");
+            dashList.innerHTML = "";
+            dashCount.innerText = todayTasks.length;
             
             if (todayTasks.length > 0) {
-                dashBlock.style.display = "block";
-                dashList.innerHTML = "";
-                dashCount.innerText = todayTasks.length;
                 todayTasks.forEach(item => {
-                    // 使用原有的渲染函数，只需传入原始索引
+                    // 复用渲染函数
                     const el = createTaskElement(item.task, item.sIdx, item.tIdx);
                     dashList.appendChild(el);
                 });
             } else {
-                dashBlock.style.display = "none";
+                dashList.innerHTML = "<div style='text-align:center;color:#ccc;padding:10px;font-size:13px;'>今天暂无待办，去下面添加吧~</div>";
             }
+
+            // 4. 渲染分页圆点
+            renderDots();
+        }
+
+        // --- 🔵 分页圆点逻辑 ---
+        function renderDots() {
+            const dotsContainer = document.getElementById("paginationDots");
+            dotsContainer.innerHTML = "";
+            appData.sections.forEach((_, idx) => {
+                const dot = document.createElement("div");
+                dot.className = "dot";
+                if(idx === 0) dot.classList.add("active"); // 默认第一个激活
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        function initScrollListener() {
+            const container = document.getElementById("horizontalContainer");
+            container.addEventListener('scroll', () => {
+                const scrollLeft = container.scrollLeft;
+                const sectionWidth = container.clientWidth * 0.88 + 15; // 估算宽度+间距
+                // 计算当前索引
+                let activeIndex = Math.round(scrollLeft / sectionWidth);
+                if (activeIndex >= appData.sections.length) activeIndex = appData.sections.length - 1;
+                
+                // 更新圆点
+                const dots = document.querySelectorAll(".dot");
+                dots.forEach((dot, idx) => {
+                    if(idx === activeIndex) dot.classList.add("active");
+                    else dot.classList.remove("active");
+                });
+            });
+        }
+
+        // --- 🌟 Dashboard 逻辑 ---
+        function toggleDashboard() {
+            const block = document.getElementById("todayDashboard");
+            if (block.classList.contains('expanded')) {
+                block.classList.remove('expanded');
+                block.classList.add('collapsed');
+                appData.meta.dashCollapsed = true;
+            } else {
+                block.classList.remove('collapsed');
+                block.classList.add('expanded');
+                appData.meta.dashCollapsed = false;
+            }
+            dbEngine.save(appData); // 保存状态
+        }
+
+        function saveDashTitle(el) {
+            appData.meta.dashTitle = el.innerText;
+            dbEngine.save(appData);
         }
 
         // --- 核心：任务项 HTML ---
@@ -505,6 +559,7 @@
                 let dueClass = "date-val date-gray";
                 let preBadgeClass = "badge-gray"; 
 
+                // Start Date Logic
                 if(task.startDate) {
                     const sd = new Date(task.startDate); sd.setHours(0,0,0,0);
                     const formattedStart = `${sd.getFullYear()}.${(sd.getMonth()+1).toString().padStart(2,'0')}.${sd.getDate().toString().padStart(2,'0')}`;
@@ -513,9 +568,12 @@
                         const diff = Math.ceil((sd - now)/86400000);
                         preTag = `<span class="date-badge badge-green">还有 ${diff} 天</span>`;
                     } else {
-                        // 过去或今天
-                        if(now.getTime() === sd.getTime()) startClass = "date-val date-green"; 
-                        else startClass = "date-val date-gray";
+                        // 过去或今天：检查逻辑
+                        if(now.getTime() === sd.getTime()) {
+                            startClass = "date-val date-green"; // 今天绿
+                        } else {
+                            startClass = "date-val date-gray"; // 过去灰
+                        }
                     }
 
                     if(task.dueDate) {
@@ -531,23 +589,24 @@
                     startTag = `<span class="date-label">Start</span><span class="${startClass}">${formattedStart}</span>`;
                 }
 
+                // Deadline Logic
                 if(task.dueDate) {
                     const dd = new Date(task.dueDate); dd.setHours(0,0,0,0);
                     const formattedDue = `${dd.getFullYear()}.${(dd.getMonth()+1).toString().padStart(2,'0')}.${dd.getDate().toString().padStart(2,'0')}`;
                     const diff = Math.ceil((dd - now)/86400000);
 
                     if(now > dd && !task.done) {
+                        // 过期
                         postTag = `<span class="date-badge badge-red">过期 ${Math.abs(diff)} 天</span>`;
                         dueClass = "date-val date-gray"; 
                     } else if (now.getTime() === dd.getTime()) {
                         if(!preTag) preTag = `<span class="date-badge badge-green">今天截止</span>`;
-                        // 截止日期当天也是绿色
                         dueClass = "date-val date-green";
                     } else if (!task.startDate && !preTag && diff >= 0) {
                         preTag = `<span class="date-badge badge-green">剩 ${diff} 天</span>`;
-                        dueClass = "date-val date-green"; 
-                    } else if (now < dd) {
                         dueClass = "date-val date-green";
+                    } else {
+                        if(now < dd) dueClass = "date-val date-green";
                     }
                     dueTag = `<span class="date-label">Deadline</span><span class="${dueClass}">${formattedDue}</span>`;
                 }
@@ -620,7 +679,7 @@
 
         // --- 逻辑操作 ---
         function updateAndSave() { renderAll(); dbEngine.save(appData); }
-        function toggleSection(idx) { /* 横向模式不需要折叠，空函数以防报错 */ }
+        function toggleSection(idx) { /* 横向模式不折叠子板块 */ }
         function toggleTask(s, t) { if(!appData.sections[s]||!appData.sections[s].tasks[t])return; appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); }
         function delTask(s, t) { if(!appData.sections[s]||!appData.sections[s].tasks[t])return; appData.sections[s].tasks.splice(t, 1); updateAndSave(); }
         function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t => !t.done); updateAndSave(); }

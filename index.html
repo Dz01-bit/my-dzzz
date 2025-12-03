@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dzz">
-    <title>Dzz 8.2</title>
+    <title>Dzz 9.1</title>
     
     <link rel="apple-touch-icon" sizes="180x180" href="https://ui-avatars.com/api/?name=Dzz&background=556b2f&color=ffffff&size=512&length=3&font-size=0.4&rounded=false&bold=true">
     <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=Dzz&background=556b2f&color=ffffff&size=512&length=3&font-size=0.4&rounded=false&bold=true">
@@ -68,7 +68,6 @@
         .dash-title:focus { border-bottom: 1px dashed var(--theme-dark); }
         .dash-count { font-size: 12px; background: var(--theme-dark); color: white; padding: 1px 6px; border-radius: 8px; margin-right: auto;}
         
-        /* 📊 统计入口 (SVG 线图) */
         .dash-stats-btn { 
             width: 24px; height: 24px; margin-right: 10px; cursor: pointer; opacity: 0.6; 
             display: flex; align-items: center; justify-content: center; transition: 0.2s;
@@ -87,17 +86,25 @@
             font-weight: bold; text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
 
-        /* --- 🔥 2. 横向滑动容器 --- */
+        /* --- 🔥 2. 横向滑动容器 (无限循环) --- */
         .scroll-container {
-            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
-            gap: 15px; padding: 10px 15px 20px 15px; -webkit-overflow-scrolling: touch; 
+            display: flex; 
+            overflow-x: auto; 
+            scroll-snap-type: x mandatory; 
+            gap: 15px; 
+            padding: 10px 15px 20px 15px; 
+            -webkit-overflow-scrolling: touch; 
+            /* 隐藏滚动条 */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE 10+ */
         }
-        .scroll-container::-webkit-scrollbar { display: none; }
+        .scroll-container::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
 
         /* 板块卡片 */
         .section-block { 
             background: var(--card-bg); border-radius: 16px; padding: 0 0 12px 0; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;
+            /* 🔥 固定宽度：屏幕宽度的 90%，最大400 */
             min-width: 90vw; width: 90vw; max-width: 400px; 
             scroll-snap-align: center; height: fit-content; flex-shrink: 0; 
         }
@@ -114,23 +121,18 @@
         }
         
         .section-count { 
-            font-size: 11px; color: #fff; 
-            background: var(--theme-dark);
+            font-size: 11px; color: #fff; background: var(--theme-dark);
             padding: 2px 8px; border-radius: 10px; opacity: 0.9;
             cursor: pointer; transition: transform 0.1s; user-select: none;
         }
         .section-count:active { transform: scale(0.9); opacity: 1; }
-
-        /* 颜色选择器隐形 */
         .color-picker-trigger { display:none; } 
-        /* 我们直接利用 section-count 点击触发颜色选择，需要动态插入 input */
 
         /* 任务列表 */
         .task-list-area { min-height: 40px; padding: 0 10px; } 
         .task-item { border-bottom: 1px solid #f5f5f5; padding: 14px 2px; background: white; position: relative; }
-
-        /* 任务内容 */
         .task-row-top { display: flex; align-items: flex-start; }
+        
         .checkbox { 
             width: 18px; height: 18px; border: 2px solid var(--theme-dark); border-radius: 6px; 
             margin-right: 12px; margin-top: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; transition: 0.2s;
@@ -155,7 +157,6 @@
 
         .task-note-middle { font-size: 12px; color: #999; margin-top: 3px; margin-bottom: 5px; display: block; }
 
-        /* 计时 */
         .timer-logs-area { margin-top: 5px; font-size: 11px; color: #888; }
         .time-log-item { display: inline-block; background: #f9f9f9; padding: 2px 6px; border-radius: 4px; margin-right: 5px; margin-bottom: 2px; border: 1px solid #eee; }
         .del-log-btn { color: #ccc; margin-left: 4px; cursor: pointer; font-weight: bold; }
@@ -164,7 +165,6 @@
         .timer-btn.running { background: var(--timer-active); color: white; border-color: var(--timer-active); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);} 70% {box-shadow: 0 0 0 6px rgba(255, 152, 0, 0);} 100% {box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);} }
 
-        /* 进度条 */
         .progress-area { margin-top: 10px; margin-bottom: 8px; padding-right: 5px; }
         .prog-bar-track { position: relative; height: 12px; background: #e0e0e0; border-radius: 6px; overflow: visible; margin-bottom: 8px; }
         .prog-bar-fill { height: 100%; background: var(--theme-dark); width: 0%; transition: width 0.1s linear; border-radius: 6px; }
@@ -185,7 +185,6 @@
         .subtask-text { font-size: 13px; color: #666; }
         .subtask-text.done { text-decoration: line-through; color: #bbb; }
 
-        /* 已完成 */
         .completed-section { margin-top: 15px; padding-top: 0; border-top: none; padding: 0 10px; }
         .completed-header { font-size: 12px; color: #aaa; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .clear-btn { background: #fff; border: 1px solid #eee; color: var(--danger); font-size: 10px; padding: 2px 8px; border-radius: 12px; }
@@ -198,7 +197,7 @@
 
         /* 分页点 */
         .pagination-container { display: flex; justify-content: center; gap: 8px; padding: 5px 0; margin-bottom: 20px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: all 0.2s; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: all 0.2s; cursor: pointer; }
         .dot.active { background: var(--theme-dark); width: 16px; border-radius: 4px; }
 
         /* 底部全局布局 */
@@ -208,7 +207,7 @@
         .data-link { font-size: 13px; color: #aaa; cursor: pointer; text-decoration: none; padding: 8px; font-weight: 500; }
         .data-link:hover { color: var(--theme-dark); }
 
-        /* 统计弹窗 */
+        /* 弹窗 */
         .stats-tabs { display: flex; border-bottom: 1px solid #eee; margin-bottom: 15px; }
         .stats-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-size: 13px; color: #999; font-weight: 500; }
         .stats-tab.active { color: var(--theme-dark); border-bottom: 2px solid var(--theme-dark); }
@@ -224,13 +223,11 @@
         .btn-outline { background: #fff; border: 1px solid #ddd; color: #555; padding: 8px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; }
         .btn-danger-outline { border-color: var(--danger); color: var(--danger); }
 
-        /* 弹窗/输入框 */
         .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
         .lightbox-img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 4px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 1000; display: none; align-items: center; justify-content: center; }
         .modal { background: #fff; width: 90%; max-width: 400px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.15); animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        /* 🔥 统计弹窗标题图标 */
         .modal h3 { font-size: 24px; color: var(--text-main); margin: 0 0 20px 0; text-align: center; display: flex; justify-content: center;}
         .modal h3 svg { width: 32px; height: 32px; stroke: var(--theme-dark); stroke-width: 2; fill: none; }
 
@@ -315,7 +312,7 @@
     </div>
 
     <script>
-        const DB_NAME = "Dzz_V28_Final"; const STORE_NAME = "store"; let db;
+        const DB_NAME = "Dzz_V29_Infinite"; const STORE_NAME = "store"; let db;
         const dbEngine = {
             init: () => new Promise((res, rej) => {
                 const r = indexedDB.open(DB_NAME, 1);
@@ -335,12 +332,13 @@
         };
 
         let appData = {
-            meta: { dashTitle: "今日聚焦", dashCollapsed: false },
+            meta: { dashTitle: "今日聚焦", dashCollapsed: false, savedIndex: 0 },
             sections: [{ title: " 🌱 默认清单", color: "#556b2f", tasks: [] }]
         };
 
         let activeTimer = null;
         let currentStatsTab = 'day';
+        let isInitialScroll = true;
 
         window.onload = async () => {
             const d = new Date();
@@ -348,7 +346,7 @@
             try {
                 await dbEngine.init();
                 const data = await dbEngine.load();
-                if(data) { appData = data; if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false }; }
+                if(data) { appData = data; if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false, savedIndex: 0 }; }
                 document.getElementById("globalActions").style.display = "flex";
                 
                 document.querySelector('.dash-title').innerText = appData.meta.dashTitle;
@@ -356,24 +354,25 @@
                 if(appData.meta.dashCollapsed) dashBlock.classList.add('collapsed'); else dashBlock.classList.add('expanded');
 
                 renderAll();
-                initScrollListener();
+                initInfiniteScroll();
+
             } catch(e) { alert("Error: " + e); }
         };
 
+        // --- 🔥 渲染主入口 ---
         function renderAll() {
             const container = document.getElementById("horizontalContainer");
             container.innerHTML = "";
             const todayTasks = [];
             const todayStart = new Date().setHours(0,0,0,0);
 
+            // 1. 数据处理
             appData.sections.forEach((section, sIdx) => {
                 if(!section.color) section.color = "#556b2f";
-
                 section.tasks.sort((a, b) => {
                     const getT = t => (t.startDate ? new Date(t.startDate) : (t.dueDate ? new Date(t.dueDate) : 8640000000000000));
                     return getT(a) - getT(b);
                 });
-
                 section.tasks.forEach((task, tIdx) => {
                     if (!task.done) {
                         let isIncluded = false;
@@ -383,51 +382,25 @@
                         if (sd && dd && todayStart >= sd && todayStart <= dd) isIncluded = true;
                         if (dd && todayStart <= dd) isIncluded = true;
                         if (dd && todayStart > dd) isIncluded = true; 
-                        
                         if(isIncluded) todayTasks.push({task, sIdx, tIdx});
                     }
                 });
-
-                const block = document.createElement("div");
-                block.className = "section-block";
-                block.innerHTML = `
-                    <div class="section-header-row">
-                        <div class="sec-title-group">
-                            <div class="section-title" contenteditable="true" onblur="appData.sections[${sIdx}].title=this.innerText;updateAndSave()">${section.title}</div>
-                            <div class="section-count" style="background:${section.color}" onclick="setSectionColor(${sIdx})">
-                                ${section.tasks.filter(t=>t.done).length}/${section.tasks.length}
-                            </div>
-                        </div>
-                        <div class="del-section-btn" onclick="deleteSection(${sIdx})"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>
-                    </div>
-                `;
-                
-                const list = document.createElement("div");
-                list.className = "task-list-area";
-                list.dataset.sIdx = sIdx;
-                section.tasks.forEach((task, tIdx) => {
-                    if(!task.done) list.appendChild(createTaskElement(task, sIdx, tIdx, false));
-                });
-                new Sortable(list, { group: 'dzz', animation: 150, delay: 200, delayOnTouchOnly: true, onEnd: handleSort });
-                block.appendChild(list);
-
-                const doneTasks = section.tasks.filter(t => t.done);
-                if(doneTasks.length > 0) {
-                    const doneSec = document.createElement("div");
-                    doneSec.className = "completed-section";
-                    doneSec.innerHTML = `<div class="completed-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><span>已完成</span><span class="clear-btn" onclick="event.stopPropagation();clearDone(${sIdx})">Clear</span></div><div class="completed-list" style="display:none;margin-top:5px;"></div>`;
-                    const dl = doneSec.querySelector('.completed-list');
-                    section.tasks.forEach((task, tIdx) => { if(task.done) dl.appendChild(createTaskElement(task, sIdx, tIdx, false)); });
-                    block.appendChild(doneSec);
-                }
-                const addBtn = document.createElement("div");
-                addBtn.className = "add-btn-circle";
-                addBtn.innerHTML = "+";
-                addBtn.onclick = () => openModal(sIdx);
-                block.appendChild(addBtn);
-                container.appendChild(block);
             });
 
+            // 2. 构建无限循环列表
+            const totalSections = appData.sections.length;
+            if(totalSections > 0) {
+                // Clone Last
+                container.appendChild(createSectionBlock(appData.sections[totalSections-1], totalSections-1, true));
+                // Real Sections
+                appData.sections.forEach((sec, idx) => container.appendChild(createSectionBlock(sec, idx, false)));
+                // Clone First
+                container.appendChild(createSectionBlock(appData.sections[0], 0, true));
+            } else {
+                container.innerHTML = "<div style='width:100%;text-align:center;padding:20px;color:#aaa'>点击下方 + 添加新板块</div>";
+            }
+
+            // 3. 渲染 Dashboard
             const dashList = document.getElementById("dashList");
             document.getElementById("dashCount").innerText = todayTasks.length;
             dashList.innerHTML = "";
@@ -439,13 +412,121 @@
             renderDots();
         }
 
-        // --- HTML 生成 ---
+        // --- 生成板块 HTML (含Clone逻辑) ---
+        function createSectionBlock(section, sIdx, isClone) {
+            const block = document.createElement("div");
+            block.className = "section-block";
+            
+            const contentHTML = `
+                <div class="section-header-row">
+                    <div class="sec-title-group">
+                        <div class="section-title" ${!isClone?'contenteditable="true"':''} onblur="if(!${isClone}){appData.sections[${sIdx}].title=this.innerText;updateAndSave()}">${section.title}</div>
+                        <div class="section-count" style="background:${section.color}" onclick="if(!${isClone})setSectionColor(${sIdx})">
+                            ${section.tasks.filter(t=>t.done).length}/${section.tasks.length}
+                        </div>
+                    </div>
+                    ${!isClone ? `<div class="del-section-btn" onclick="deleteSection(${sIdx})"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>` : '<div style="width:52px"></div>'}
+                </div>
+            `;
+            block.innerHTML = contentHTML;
+
+            const list = document.createElement("div");
+            list.className = "task-list-area";
+            list.dataset.sIdx = sIdx; 
+            
+            section.tasks.forEach((task, tIdx) => {
+                if(!task.done) list.appendChild(createTaskElement(task, sIdx, tIdx, false));
+            });
+            
+            if(!isClone) new Sortable(list, { group: 'dzz', animation: 150, delay: 200, delayOnTouchOnly: true, onEnd: handleSort });
+
+            block.appendChild(list);
+
+            const doneTasks = section.tasks.filter(t => t.done);
+            if(doneTasks.length > 0) {
+                const doneSec = document.createElement("div");
+                doneSec.className = "completed-section";
+                doneSec.innerHTML = `<div class="completed-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><span>已完成</span><span class="clear-btn" onclick="event.stopPropagation();if(!${isClone})clearDone(${sIdx})">Clear</span></div><div class="completed-list" style="display:none;margin-top:5px;"></div>`;
+                const dl = doneSec.querySelector('.completed-list');
+                section.tasks.forEach((task, tIdx) => { if(task.done) dl.appendChild(createTaskElement(task, sIdx, tIdx, false)); });
+                block.appendChild(doneSec);
+            }
+
+            if(!isClone) {
+                const addBtn = document.createElement("div");
+                addBtn.className = "add-btn-circle";
+                addBtn.innerHTML = "+";
+                addBtn.onclick = () => openModal(sIdx);
+                block.appendChild(addBtn);
+            } else {
+                block.appendChild(document.createElement("div")).style.height="30px";
+            }
+            return block;
+        }
+
+        // --- 🔥 无限滚动监听 ---
+        function initInfiniteScroll() {
+            const container = document.getElementById("horizontalContainer");
+            const itemWidth = window.innerWidth * 0.9 + 15; // 90vw + gap
+            
+            if(isInitialScroll && appData.sections.length > 0) {
+                let startIdx = (appData.meta.savedIndex !== undefined) ? appData.meta.savedIndex : 0;
+                if(startIdx >= appData.sections.length) startIdx = 0;
+                container.scrollLeft = (startIdx + 1) * itemWidth;
+                isInitialScroll = false;
+            }
+
+            container.addEventListener('scroll', () => {
+                const sl = container.scrollLeft;
+                const total = appData.sections.length;
+                if (total === 0) return;
+
+                let visualIndex = Math.round(sl / itemWidth) - 1;
+                
+                if (sl <= 5) { 
+                    container.style.scrollBehavior = 'auto';
+                    container.scrollLeft = total * itemWidth;
+                    requestAnimationFrame(() => container.style.scrollBehavior = 'smooth');
+                } else if (sl >= (total + 1) * itemWidth - 10) { 
+                    container.style.scrollBehavior = 'auto';
+                    container.scrollLeft = itemWidth;
+                    requestAnimationFrame(() => container.style.scrollBehavior = 'smooth');
+                }
+
+                if (visualIndex < 0) visualIndex = total - 1;
+                if (visualIndex >= total) visualIndex = 0;
+                
+                updateDots(visualIndex);
+                if(!isInitialScroll) {
+                    appData.meta.savedIndex = visualIndex;
+                    clearTimeout(window.saveScrollTimer);
+                    window.saveScrollTimer = setTimeout(()=>dbEngine.save(appData), 500);
+                }
+            });
+        }
+
+        function renderDots() {
+            const c = document.getElementById("paginationDots"); c.innerHTML="";
+            appData.sections.forEach((_,i)=>{ 
+                const d=document.createElement("div"); d.className="dot"; 
+                if(i===appData.meta.savedIndex)d.classList.add("active"); 
+                d.onclick = () => scrollToSection(i); // 🔥 点击跳转
+                c.appendChild(d); 
+            });
+        }
+        function updateDots(idx) { document.querySelectorAll(".dot").forEach((d,i)=>d.classList.toggle("active", i===idx)); }
+        function scrollToSection(idx) {
+            const container = document.getElementById("horizontalContainer");
+            const itemWidth = window.innerWidth * 0.9 + 15;
+            container.scrollTo({ left: (idx + 1) * itemWidth, behavior: 'smooth' });
+        }
+
+        // --- 核心：任务项 HTML ---
         function createTaskElement(task, sIdx, tIdx, isDash) {
             const div = document.createElement("div");
             div.className = "task-item";
-            const secColor = appData.sections[sIdx].color || "#556b2f";
+            const secColor = appData.sections[sIdx]?.color || "#556b2f";
             
-            // 日期逻辑
             let dateHTML = "";
             if(task.dueDate || task.startDate) {
                 const now = new Date().setHours(0,0,0,0);
@@ -493,32 +574,19 @@
                 dateHTML = `<span class="date-inline-container">${preTag} ${startTag} ${midTag} ${dueTag} ${postTag}</span>`;
             }
 
-            // 计时器逻辑
-            let timerHTML = "";
-            let timeLogsHTML = "";
+            let timerHTML = "", timeLogsHTML = "";
             if (isDash && !task.done) {
                 const isRunning = activeTimer && activeTimer.sIdx===sIdx && activeTimer.tIdx===tIdx;
                 timerHTML = `<div class="timer-btn ${isRunning?'running':''}" onclick="toggleTimer(${sIdx}, ${tIdx}, this)">${isRunning?'⏹':'▶'}</div>`;
             }
             if (task.timeLogs && task.timeLogs.length > 0) {
-                timeLogsHTML = `<div class="timer-logs-area">` + 
-                    task.timeLogs.map((l, i) => `<span class="time-log-item">${l.display} (${l.durStr})<span class="del-log-btn" onclick="deleteTimeLog(${sIdx}, ${tIdx}, ${i})">×</span></span>`).join('') + 
-                    `</div>`;
+                timeLogsHTML = `<div class="timer-logs-area">` + task.timeLogs.map((l, i) => `<span class="time-log-item">${l.display} (${l.durStr})<span class="del-log-btn" onclick="deleteTimeLog(${sIdx}, ${tIdx}, ${i})">×</span></span>`).join('') + `</div>`;
             }
-
             let sourceHTML = isDash ? `<span class="source-tag" style="background-color:${secColor}">${appData.sections[sIdx].title.trim()}</span>` : "";
-
             let bottomContent = "";
             if (task.targetVal && task.targetVal > 0 && !task.done) {
                 const pct = Math.min(100, Math.round((task.currentVal / task.targetVal) * 100));
-                bottomContent = `
-                    <div class="progress-area">
-                        <div class="prog-bar-track"><div class="prog-bar-fill" style="width: ${pct}%; background:${secColor}"></div><input type="range" class="prog-slider" min="0" max="${task.targetVal}" step="${task.stepVal||1}" value="${task.currentVal}" onchange="updateProgVal(${sIdx}, ${tIdx}, this.value)"></div>
-                        <div class="prog-controls-row">
-                            <div class="prog-text-display" style="color:${secColor}">${pct}% | ${task.currentVal}/${task.targetVal} ${task.unit||''}</div>
-                            <div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, -1)">-</div><div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, 1)">+</div>
-                        </div>
-                    </div>`;
+                bottomContent = `<div class="progress-area"><div class="prog-bar-track"><div class="prog-bar-fill" style="width: ${pct}%; background:${secColor}"></div><input type="range" class="prog-slider" min="0" max="${task.targetVal}" step="${task.stepVal||1}" value="${task.currentVal}" onchange="updateProgVal(${sIdx}, ${tIdx}, this.value)"></div><div class="prog-controls-row"><div class="prog-text-display" style="color:${secColor}">${pct}% | ${task.currentVal}/${task.targetVal} ${task.unit||''}</div><div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, -1)">-</div><div class="prog-btn" onclick="adjustProg(${sIdx}, ${tIdx}, 1)">+</div></div></div>`;
             }
 
             div.innerHTML = `
@@ -552,91 +620,40 @@
             }).join('') + '</div>';
         }
 
-        // --- 📊 统计核心逻辑 ---
-        function switchStatsTab(tab) {
-            currentStatsTab = tab;
-            document.querySelectorAll('.stats-tab').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.stats-tab').forEach(el => {
-                if(el.innerText.toLowerCase() === tab) el.classList.add('active');
-            });
-            renderStatsContent();
-        }
+        // --- 逻辑操作 ---
+        function updateAndSave() { renderAll(); dbEngine.save(appData); }
+        function toggleDashboard() { const b=document.getElementById("todayDashboard"); b.classList.toggle('collapsed'); b.classList.toggle('expanded'); appData.meta.dashCollapsed = b.classList.contains('collapsed'); dbEngine.save(appData); }
+        function saveDashTitle(el) { appData.meta.dashTitle = el.innerText; dbEngine.save(appData); }
+        function toggleTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); } }
+        function delTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks.splice(t,1); updateAndSave(); } }
+        function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t=>!t.done); updateAndSave(); }
+        function updateProgVal(s,t,v) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].currentVal = parseFloat(v); updateAndSave(); } }
+        function adjustProg(s,t,d) { const task=appData.sections[s]?.tasks[t]; if(!task) return; let v=(parseFloat(task.currentVal)||0)+(d*(parseFloat(task.stepVal)||1)); if(v<0)v=0; if(v>task.targetVal)val=task.targetVal; task.currentVal=v; updateAndSave(); }
+        function toggleSubtask(s,t,l) { const task=appData.sections[s]?.tasks[t]; if(!task) return; let lines=task.subtasks.split('\n'); lines[l] = lines[l].trim().startsWith('[x]') ? lines[l].replace('[x]','').trim() : '[x] '+lines[l].trim(); task.subtasks=lines.join('\n'); updateAndSave(); }
+        function handleSort(evt) { updateAndSave(); }
+        function setSectionColor(s) { const c = prompt("输入颜色 (#ff0000 / rgb(0,0,0))", appData.sections[s].color); if(c){ appData.sections[s].color=c; updateAndSave(); }}
 
-        function openStats() {
-            document.getElementById("statsModal").style.display = "flex";
-            switchStatsTab('day');
-        }
-
+        function switchStatsTab(tab) { currentStatsTab=tab; document.querySelectorAll('.stats-tab').forEach(el=>{ el.classList.remove('active'); if(el.innerText.toLowerCase()===tab)el.classList.add('active'); }); renderStatsContent(); }
+        function openStats() { document.getElementById("statsModal").style.display="flex"; switchStatsTab('day'); }
         function renderStatsContent() {
-            const chartArea = document.getElementById("chartArea");
-            const logList = document.getElementById("logList");
+            const chartArea = document.getElementById("chartArea"); const logList = document.getElementById("logList");
+            const now=new Date(); let startLimit=0;
+            if(currentStatsTab==='day') startLimit=new Date(now.setHours(0,0,0,0)).getTime();
+            else if(currentStatsTab==='week') { const d=now.getDay()||7; now.setHours(0,0,0,0); startLimit=now.setDate(now.getDate()-d+1); }
+            else if(currentStatsTab==='month') startLimit=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+            else if(currentStatsTab==='year') startLimit=new Date(now.getFullYear(),0,1).getTime();
             
-            const now = new Date();
-            let startLimit = 0;
-            if (currentStatsTab === 'day') startLimit = new Date(now.setHours(0,0,0,0)).getTime();
-            else if (currentStatsTab === 'week') { const d = now.getDay() || 7; now.setHours(0,0,0,0); startLimit = now.setDate(now.getDate() - d + 1); }
-            else if (currentStatsTab === 'month') startLimit = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            else if (currentStatsTab === 'year') startLimit = new Date(now.getFullYear(), 0, 1).getTime();
-
-            const aggregated = {}; 
-            const logs = [];
-
-            appData.sections.forEach(sec => {
-                sec.tasks.forEach(task => {
-                    if (task.timeLogs) {
-                        task.timeLogs.forEach(log => {
-                            if (log.start >= startLimit) {
-                                if (!aggregated[sec.title]) aggregated[sec.title] = { ms: 0, color: sec.color || "#556b2f" };
-                                aggregated[sec.title].ms += (log.end - log.start);
-                                logs.push({ ...log, taskName: task.name, color: sec.color });
-                            }
-                        });
-                    }
-                });
-            });
-
-            const totalMs = Object.values(aggregated).reduce((a,b) => a + b.ms, 0);
-            let chartHTML = "";
-            for (let title in aggregated) {
-                const item = aggregated[title];
-                const pct = ((item.ms / totalMs) * 100).toFixed(1);
-                const durStr = Math.round(item.ms / 60000) + "m";
-                chartHTML += `
-                    <div class="chart-bar-row">
-                        <div class="chart-label">${title}</div>
-                        <div class="chart-track">
-                            <div class="chart-seg" style="width:${pct}%; background:${item.color}"></div>
-                        </div>
-                        <div class="chart-val">${durStr}</div>
-                    </div>
-                `;
-            }
-            chartArea.innerHTML = chartHTML || "<div style='text-align:center;color:#ccc'>暂无数据</div>";
-
-            logs.sort((a,b) => b.start - a.start);
-            let listHTML = "";
-            logs.forEach(l => {
-                const date = new Date(l.start);
-                const timeStr = `${date.getMonth()+1}/${date.getDate()} ${l.display}`;
-                listHTML += `
-                    <div class="log-item-row">
-                        <span style="color:${l.color}">● ${l.taskName}</span>
-                        <span>${timeStr} (${l.durStr})</span>
-                    </div>
-                `;
-            });
-            logList.innerHTML = listHTML || "<div style='text-align:center;padding:10px;'>无记录</div>";
+            const agg={}; const logs=[];
+            appData.sections.forEach(sec=>{ sec.tasks.forEach(task=>{ if(task.timeLogs) { task.timeLogs.forEach(log=>{ if(log.start>=startLimit) { if(!agg[sec.title])agg[sec.title]={ms:0,color:sec.color||"#556b2f"}; agg[sec.title].ms+=(log.end-log.start); logs.push({...log,taskName:task.name,color:sec.color}); } }); } }); });
+            
+            const totalMs=Object.values(agg).reduce((a,b)=>a+b.ms,0);
+            let chartHTML=""; for(let t in agg) { const i=agg[t]; const pct=((i.ms/totalMs)*100).toFixed(1); const dur=Math.round(i.ms/60000)+"m"; chartHTML+=`<div class="chart-bar-row"><div class="chart-label">${t}</div><div class="chart-track"><div class="chart-seg" style="width:${pct}%;background:${i.color}"></div></div><div class="chart-val">${dur}</div></div>`; }
+            chartArea.innerHTML=chartHTML||"<div style='text-align:center;color:#ccc'>暂无数据</div>";
+            
+            logs.sort((a,b)=>b.start-a.start);
+            let listHTML=""; logs.forEach(l=>{ const d=new Date(l.start); const ts=`${d.getMonth()+1}/${d.getDate()} ${l.display}`; listHTML+=`<div class="log-item-row"><span style="color:${l.color}">● ${l.taskName}</span><span>${ts} (${l.durStr})</span></div>`; });
+            logList.innerHTML=listHTML||"<div style='text-align:center;padding:10px;'>无记录</div>";
         }
-
-        // 手动输入颜色逻辑
-        function setSectionColor(sIdx) {
-            const color = prompt("请输入颜色代码 (例如: #ff0000 或 rgb(0,128,0))", appData.sections[sIdx].color);
-            if (color) {
-                appData.sections[sIdx].color = color;
-                updateAndSave();
-            }
-        }
-
         function exportExcel() {
             let csv="\uFEFFDate,Task,Duration,Module\n";
             const now=new Date(); let startLimit=0;
@@ -644,7 +661,6 @@
             else if(currentStatsTab==='week') { const d=now.getDay()||7; now.setHours(0,0,0,0); startLimit=now.setDate(now.getDate()-d+1); }
             else if(currentStatsTab==='month') startLimit=new Date(now.getFullYear(),now.getMonth(),1).getTime();
             else if(currentStatsTab==='year') startLimit=new Date(now.getFullYear(),0,1).getTime();
-            
             appData.sections.forEach(sec=>{ sec.tasks.forEach(task=>{ if(task.timeLogs) { task.timeLogs.forEach(log=>{ if(log.start>=startLimit) { const ds=new Date(log.start).toLocaleString(); const dm=Math.round((log.end-log.start)/60000); csv+=`"${ds}","${task.name}",${dm},"${sec.title}"\n`; } }); } }); });
             const b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`Dzz_Stats_${currentStatsTab}.csv`; a.click();
         }
@@ -653,115 +669,13 @@
         function toggleTimer(s,t,btn) { event.stopPropagation(); if(activeTimer) { const now=new Date(), start=activeTimer.startTime, ms=now-start, min=Math.ceil(ms/60000); const fmt=d=>`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; const disp=`${fmt(start)}-${fmt(now)}`; const task=appData.sections[activeTimer.sIdx].tasks[activeTimer.tIdx]; if(!task.timeLogs)task.timeLogs=[]; task.timeLogs.push({start:start.getTime(),end:now.getTime(),display:disp,durStr:`${min}m`}); activeTimer=null; updateAndSave(); if(activeTimer&&activeTimer.sIdx===s&&activeTimer.tIdx===t)return; } if(!btn.classList.contains('running')) { activeTimer={sIdx:s,tIdx:t,startTime:new Date()}; renderAll(); } }
         function deleteTimeLog(s,t,i) { event.stopPropagation(); if(confirm("删除记录？")) { appData.sections[s].tasks[t].timeLogs.splice(i,1); updateAndSave(); } }
 
-        // --- 基础逻辑 ---
-        function updateAndSave() { renderAll(); dbEngine.save(appData); }
-        function renderDots() {
-            const c = document.getElementById("paginationDots"); c.innerHTML="";
-            appData.sections.forEach((_,i)=>{ const d=document.createElement("div"); d.className="dot"; if(i===0)d.classList.add("active"); c.appendChild(d); });
-        }
-        function initScrollListener() {
-            const c = document.getElementById("horizontalContainer");
-            c.addEventListener('scroll', ()=>{
-                const w = c.clientWidth*0.9 + 15;
-                let i = Math.round(c.scrollLeft/w); if(i>=appData.sections.length)i=appData.sections.length-1;
-                document.querySelectorAll(".dot").forEach((d,idx)=>d.classList.toggle("active", idx===i));
-            });
-        }
-        function toggleDashboard() {
-            const b = document.getElementById("todayDashboard");
-            b.classList.toggle('collapsed'); b.classList.toggle('expanded');
-            appData.meta.dashCollapsed = b.classList.contains('collapsed');
-            dbEngine.save(appData);
-        }
-        function saveDashTitle(el) { appData.meta.dashTitle = el.innerText; dbEngine.save(appData); }
-        function toggleTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); } }
-        function delTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks.splice(t,1); updateAndSave(); } }
-        function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t=>!t.done); updateAndSave(); }
-        function updateProgVal(s,t,v) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].currentVal = parseFloat(v); updateAndSave(); } }
-        function adjustProg(s,t,d) { 
-            const task = appData.sections[s]?.tasks[t]; if(!task) return;
-            let v = (parseFloat(task.currentVal)||0) + (d*(parseFloat(task.stepVal)||1));
-            if(v<0)v=0; if(v>task.targetVal)v=task.targetVal; task.currentVal=v; updateAndSave();
-        }
-        function toggleSubtask(s,t,l) {
-            const task = appData.sections[s]?.tasks[t]; if(!task) return;
-            let lines = task.subtasks.split('\n');
-            lines[l] = lines[l].trim().startsWith('[x]') ? lines[l].replace('[x]','').trim() : '[x] '+lines[l].trim();
-            task.subtasks = lines.join('\n'); updateAndSave();
-        }
-        function handleSort(evt) { updateAndSave(); }
-
         function showLightbox(src) { document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').style.display='flex'; }
         function closeLightbox() { document.getElementById('lightbox').style.display='none'; }
-        
-        function openModal(s, t=null) {
-            document.getElementById("editSectionIndex").value = s;
-            document.getElementById("editTaskIndex").value = t!==null?t:-1;
-            document.getElementById("taskModal").style.display = "flex";
-            const box = document.getElementById("imgPreviewContainer");
-            
-            if(t!==null) {
-                const task = appData.sections[s].tasks[t];
-                document.getElementById("inputName").value = task.name;
-                document.getElementById("inputNote").value = task.note||"";
-                document.getElementById("inputStartDate").value = task.startDate||"";
-                document.getElementById("inputDueDate").value = task.dueDate||"";
-                document.getElementById("inputCurrent").value = task.currentVal||"";
-                document.getElementById("inputTarget").value = task.targetVal||"";
-                document.getElementById("inputUnit").value = task.unit||"";
-                document.getElementById("inputStep").value = task.stepVal||"";
-                document.getElementById("inputSubtasks").value = task.subtasks||"";
-                document.getElementById("imgBase64").value = task.img||"";
-                if(task.img) { document.getElementById("imgPreview").src=task.img; box.style.display="inline-block"; } else box.style.display="none";
-            } else {
-                document.querySelectorAll('.form-input').forEach(i=>i.value="");
-                document.getElementById("imgBase64").value=""; box.style.display="none";
-            }
-        }
-        function closeModal() { document.getElementById("taskModal").style.display = "none"; }
-        function handleImageCompressed(input) {
-            if (input.files && input.files[0]) {
-                const r = new FileReader();
-                r.onload = e => {
-                    const img = new Image(); img.src = e.target.result;
-                    img.onload = () => {
-                        const c = document.createElement('canvas'); const ctx = c.getContext('2d');
-                        let w=img.width, h=img.height; if(w>800){h=Math.round(h*800/w);w=800;} c.width=w; c.height=h;
-                        ctx.drawImage(img,0,0,w,h);
-                        const b64 = c.toDataURL('image/jpeg', 0.7);
-                        document.getElementById("imgBase64").value = b64;
-                        document.getElementById("imgPreview").src = b64;
-                        document.getElementById("imgPreviewContainer").style.display = "inline-block";
-                    }
-                }; r.readAsDataURL(input.files[0]);
-            }
-        }
+        function openModal(s, t=null) { document.getElementById("editSectionIndex").value=s; document.getElementById("editTaskIndex").value=t!==null?t:-1; document.getElementById("taskModal").style.display="flex"; const box=document.getElementById("imgPreviewContainer"); if(t!==null){ const task=appData.sections[s].tasks[t]; document.getElementById("inputName").value=task.name; document.getElementById("inputNote").value=task.note||""; document.getElementById("inputStartDate").value=task.startDate||""; document.getElementById("inputDueDate").value=task.dueDate||""; document.getElementById("inputCurrent").value=task.currentVal||""; document.getElementById("inputTarget").value=task.targetVal||""; document.getElementById("inputUnit").value=task.unit||""; document.getElementById("inputStep").value=task.stepVal||""; document.getElementById("inputSubtasks").value=task.subtasks||""; document.getElementById("imgBase64").value=task.img||""; if(task.img){document.getElementById("imgPreview").src=task.img;box.style.display="inline-block";}else box.style.display="none"; }else{ document.querySelectorAll('.form-input').forEach(i=>i.value=""); document.getElementById("imgBase64").value=""; box.style.display="none"; } }
+        function closeModal() { document.getElementById("taskModal").style.display="none"; }
+        function handleImageCompressed(i) { if(i.files&&i.files[0]){ const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.src=e.target.result; img.onload=()=>{ const c=document.createElement('canvas'), ctx=c.getContext('2d'); let w=img.width, h=img.height; if(w>800){h=Math.round(h*800/w);w=800;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const b=c.toDataURL('image/jpeg',0.7); document.getElementById("imgBase64").value=b; document.getElementById("imgPreview").src=b; document.getElementById("imgPreviewContainer").style.display="inline-block"; } }; r.readAsDataURL(i.files[0]); } }
         function deleteTaskImg() { document.getElementById("imgBase64").value=""; document.getElementById("imgPreviewContainer").style.display="none"; document.getElementById("inputImg").value=""; }
-
-        async function saveTask() {
-            const s = parseInt(document.getElementById("editSectionIndex").value);
-            const t = parseInt(document.getElementById("editTaskIndex").value);
-            const task = {
-                name: document.getElementById("inputName").value.trim(),
-                note: document.getElementById("inputNote").value,
-                startDate: document.getElementById("inputStartDate").value,
-                dueDate: document.getElementById("inputDueDate").value,
-                currentVal: parseFloat(document.getElementById("inputCurrent").value)||0,
-                targetVal: parseFloat(document.getElementById("inputTarget").value)||0,
-                unit: document.getElementById("inputUnit").value,
-                stepVal: parseFloat(document.getElementById("inputStep").value)||1,
-                subtasks: document.getElementById("inputSubtasks").value,
-                img: document.getElementById("imgBase64").value,
-                done: false,
-                id: t!==-1 ? appData.sections[s].tasks[t].id : Date.now(),
-                timeLogs: t!==-1 ? (appData.sections[s].tasks[t].timeLogs||[]) : []
-            };
-            if(!task.name) return alert("写个名字吧");
-            if(t!==-1) { task.done = appData.sections[s].tasks[t].done; appData.sections[s].tasks[t] = task; }
-            else appData.sections[s].tasks.push(task);
-            updateAndSave(); closeModal();
-        }
-
+        async function saveTask() { const s=parseInt(document.getElementById("editSectionIndex").value), t=parseInt(document.getElementById("editTaskIndex").value); const task={ name:document.getElementById("inputName").value.trim(), note:document.getElementById("inputNote").value, startDate:document.getElementById("inputStartDate").value, dueDate:document.getElementById("inputDueDate").value, currentVal:parseFloat(document.getElementById("inputCurrent").value)||0, targetVal:parseFloat(document.getElementById("inputTarget").value)||0, unit:document.getElementById("inputUnit").value, stepVal:parseFloat(document.getElementById("inputStep").value)||1, subtasks:document.getElementById("inputSubtasks").value, img:document.getElementById("imgBase64").value, done:false, id:t!==-1?appData.sections[s].tasks[t].id:Date.now(), timeLogs:t!==-1?(appData.sections[s].tasks[t].timeLogs||[]):[] }; if(!task.name)return alert("名称?"); if(t!==-1){ task.done=appData.sections[s].tasks[t].done; appData.sections[s].tasks[t]=task; }else appData.sections[s].tasks.push(task); updateAndSave(); closeModal(); }
         function addNewSection() { appData.sections.push({title:"新板块", tasks:[]}); updateAndSave(); }
         function deleteSection(i) { if(confirm("删除板块?")) { appData.sections.splice(i,1); updateAndSave(); } }
         async function exportData() { const b=new Blob([JSON.stringify(appData)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`Dzz备份.json`; a.click(); }
@@ -769,5 +683,3 @@
     </script>
 </body>
 </html>
-
-

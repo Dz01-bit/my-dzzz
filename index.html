@@ -6,7 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dzz">
-    <title>Dzz 8.6 触控优化版</title>
+    <link rel="apple-touch-icon" href="">
+    <link rel="icon" href="">
+    
+    <title>Dzz 8.7</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
@@ -188,24 +191,10 @@
         .del-section-btn:hover { opacity: 1; }
         .del-section-btn svg { width: 18px; height: 18px; fill: var(--text-main); }
 
-        /* --- ✨ 分页点优化 --- */
-        .pagination-container { 
-            display: flex; justify-content: center; 
-            gap: 15px; /* 间距变大，防止误触 */
-            padding: 10px 0; margin-bottom: 20px; 
-            cursor: pointer;
-        }
-        .dot { 
-            width: 12px; height: 12px; /* 尺寸变大 */
-            border-radius: 50%; background: #ddd; 
-            transition: all 0.2s; 
-            cursor: pointer; /* 鼠标手势 */
-        }
-        .dot.active { 
-            background: var(--theme-dark); 
-            width: 24px; /* 选中状态更宽 */
-            border-radius: 6px; 
-        }
+        /* 分页点优化 */
+        .pagination-container { display: flex; justify-content: center; gap: 15px; padding: 10px 0; margin-bottom: 20px; cursor: pointer;}
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; transition: all 0.2s; cursor: pointer; }
+        .dot.active { background: var(--theme-dark); width: 24px; border-radius: 6px; }
 
         /* 底部全局布局 */
         .footer-controls { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; margin: 10px 0 30px 0; }
@@ -348,6 +337,9 @@
         let currentStatsTab = 'day';
 
         window.onload = async () => {
+            // 🔥 生成图标
+            setAppIcon();
+
             const d = new Date();
             document.getElementById('dateDisplay').innerText = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
             try {
@@ -368,6 +360,33 @@
                 initScrollListener();
             } catch(e) { alert("Error: " + e); }
         };
+
+        // --- 🍎 动态生成APP图标 ---
+        function setAppIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // 背景
+            ctx.fillStyle = "#556b2f"; // 使用当前主题色
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // 文字 Dzz
+            ctx.fillStyle = "white";
+            ctx.font = "bold 200px -apple-system, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Dzz", 256, 256);
+            
+            const url = canvas.toDataURL("image/png");
+            
+            // 更新 Link 标签
+            const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
+            const favIcon = document.querySelector("link[rel='icon']");
+            
+            if(appleIcon) appleIcon.href = url;
+            if(favIcon) favIcon.href = url;
+        }
 
         function sortTasksCommon(tasks) {
             tasks.sort((a, b) => {
@@ -717,7 +736,6 @@
 
         function updateAndSave() { renderAll(); dbEngine.save(appData); }
         
-        // --- ✨ 优化后的分页点渲染与点击事件 ---
         function renderDots() {
             const c = document.getElementById("paginationDots"); 
             c.innerHTML="";
@@ -725,7 +743,6 @@
                 const d=document.createElement("div"); 
                 d.className="dot"; 
                 if(i===0)d.classList.add("active"); 
-                // 添加点击跳转逻辑
                 d.onclick = () => {
                     const container = document.getElementById("horizontalContainer");
                     const target = container.children[i];

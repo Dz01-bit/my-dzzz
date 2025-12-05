@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dzz">
-    <title>Dzz 8.4</title>
+    <title>Dzz 8.5 排序&计时增强版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
@@ -306,7 +306,7 @@
     </div>
 
     <script>
-        const DB_NAME = "Dzz_V29_UnifiedSort"; const STORE_NAME = "store"; let db;
+        const DB_NAME = "Dzz_V30_SortedTimer"; const STORE_NAME = "store"; let db;
         const dbEngine = {
             init: () => new Promise((res, rej) => {
                 const r = indexedDB.open(DB_NAME, 1);
@@ -327,10 +327,10 @@
 
         let appData = {
             meta: { dashTitle: "今日聚焦", dashCollapsed: false },
-            sections: [{ title: " 🌱 默认清单", color: "#556b2f", tasks: [] }]
+            sections: [{ title: " 🌱 默认清单", color: "#556b2f", tasks: [] }],
+            activeTimer: null // { sIdx, tIdx, start: timestamp } - 这里的持久化存储解决了手机后台运行问题
         };
 
-        let activeTimer = null;
         let currentStatsTab = 'day';
 
         window.onload = async () => {
@@ -339,7 +339,12 @@
             try {
                 await dbEngine.init();
                 const data = await dbEngine.load();
-                if(data) { appData = data; if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false }; }
+                if(data) { 
+                    appData = data; 
+                    if(!appData.meta) appData.meta = { dashTitle: "今日聚焦", dashCollapsed: false }; 
+                    // 确保 activeTimer 字段存在
+                    if(!appData.activeTimer) appData.activeTimer = null;
+                }
                 document.getElementById("globalActions").style.display = "flex";
                 
                 document.querySelector('.dash-title').innerText = appData.meta.dashTitle;
@@ -351,33 +356,32 @@
             } catch(e) { alert("Error: " + e); }
         };
 
-        // --- 🔥 统一排序函数 (核心优化) ---
+        // --- 🔥 统一排序函数 (逻辑重写) ---
         function sortTasksCommon(tasks) {
             tasks.sort((a, b) => {
-                // 1. 获取用于第一排序的时间 (起始时间)
-                // 如果没有起始时间，尝试用截止时间代替（视为"Deadline Start"）
-                // 如果都没有，设为最大值沉底
-                const getPrimary = t => {
-                    if (t.startDate) return new Date(t.startDate).getTime();
+                // 辅助：获取排序的主要时间依据
+                // 规则：有截止日期的以截止日期为准；没截止日期的以开始日期为准
+                const getPrimarySortTime = (t) => {
                     if (t.dueDate) return new Date(t.dueDate).getTime();
+                    if (t.startDate) return new Date(t.startDate).getTime();
+                    // 既无开始也无截止，排到最后 (或者你可以改为 0 排最前，这里设为极大值排最后)
                     return 8640000000000000; 
                 };
+
+                const valA = getPrimarySortTime(a);
+                const valB = getPrimarySortTime(b);
+
+                // 1. 第一排序原则：混合时间对比
+                if (valA !== valB) {
+                    return valA - valB;
+                }
+
+                // 2. 第二排序原则：如果主要时间一样 (比如截止日期一样，或者都没截止且开始日期一样)
+                // 按开始日期排序
+                const startA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                const startB = b.startDate ? new Date(b.startDate).getTime() : 0;
                 
-                // 2. 获取用于第二排序的时间 (截止时间)
-                // 仅用于当起始时间相同时的比较
-                const getSecondary = t => {
-                    if (t.dueDate) return new Date(t.dueDate).getTime();
-                    return 8640000000000000; // 无截止日期视为最不紧急
-                };
-                
-                const pA = getPrimary(a);
-                const pB = getPrimary(b);
-                
-                // 优先按起始日期排
-                if (pA !== pB) return pA - pB;
-                
-                // 起始日期相同时，按截止日期排
-                return getSecondary(a) - getSecondary(b);
+                return startA - startB;
             });
             return tasks;
         }
@@ -388,10 +392,19 @@
             const todayTasks = [];
             const todayStart = new Date().setHours(0,0,0,0);
 
+            // 检查当前计时的任务是否已被删除，如果被删，清理计时器
+            if(appData.activeTimer) {
+                const {sIdx, tIdx} = appData.activeTimer;
+                if(!appData.sections[sIdx] || !appData.sections[sIdx].tasks[tIdx]) {
+                    appData.activeTimer = null; // 任务不存在，静默清除
+                    dbEngine.save(appData);
+                }
+            }
+
             appData.sections.forEach((section, sIdx) => {
                 if(!section.color) section.color = "#556b2f";
 
-                // 🔥 1. 对分模块进行统一排序
+                // 🔥 1. 对板块内任务进行排序
                 sortTasksCommon(section.tasks);
 
                 section.tasks.forEach((task, tIdx) => {
@@ -399,12 +412,13 @@
                         let isIncluded = false;
                         const sd = task.startDate ? new Date(task.startDate).setHours(0,0,0,0) : null;
                         const dd = task.dueDate ? new Date(task.dueDate).setHours(0,0,0,0) : null;
+                        // 今日逻辑：开始日期到了，或者在开始截止区间内，或者今天截止，或者已过期
                         if (sd && sd === todayStart) isIncluded = true;
                         if (sd && dd && todayStart >= sd && todayStart <= dd) isIncluded = true;
                         if (dd && todayStart <= dd) isIncluded = true;
                         if (dd && todayStart > dd) isIncluded = true; 
                         
-                        // 为了保持数据引用，重新构建带索引的对象
+                        // 注意：这里保存原来的引用，但在今日列表显示时，需要用当前的 sIdx/tIdx
                         if(isIncluded) todayTasks.push({task, sIdx, tIdx});
                     }
                 });
@@ -449,18 +463,15 @@
                 container.appendChild(block);
             });
 
-            // 🔥 2. 对今日聚焦（总模块）使用完全相同的排序逻辑
-            // 注意：因为 todayTasks 是包装对象 {task, sIdx, tIdx}，我们需要传给排序函数前稍微处理一下比较逻辑，或者直接定制比较。
-            // 为了绝对的原则一致，我把逻辑展开在这里，调用相同的核心比较
+            // 🔥 2. 对今日聚焦（总模块）使用相同的排序逻辑
             todayTasks.sort((a, b) => {
-                // 这里我们手动展开 sortTasksCommon 的逻辑，但作用于 a.task 和 b.task
-                const getPrimary = t => t.startDate ? new Date(t.startDate).getTime() : (t.dueDate ? new Date(t.dueDate).getTime() : 8640000000000000);
-                const getSecondary = t => t.dueDate ? new Date(t.dueDate).getTime() : 8640000000000000;
-                
-                const pA = getPrimary(a.task);
-                const pB = getPrimary(b.task);
-                if (pA !== pB) return pA - pB;
-                return getSecondary(a.task) - getSecondary(b.task);
+                // 手动复用比较逻辑，因为 todayTasks 结构不同
+                const getP = t => t.dueDate ? new Date(t.dueDate).getTime() : (t.startDate ? new Date(t.startDate).getTime() : 8640000000000000);
+                const pA = getP(a.task), pB = getP(b.task);
+                if(pA !== pB) return pA - pB;
+                const sA = a.task.startDate ? new Date(a.task.startDate).getTime() : 0;
+                const sB = b.task.startDate ? new Date(b.task.startDate).getTime() : 0;
+                return sA - sB;
             });
 
             const dashList = document.getElementById("dashList");
@@ -485,7 +496,7 @@
             if(task.dueDate || task.startDate) {
                 const now = new Date().setHours(0,0,0,0);
                 let preTag="", startTag="", midTag="", dueTag="", postTag="";
-                let startClass="date-val date-gray", dueClass="date-val date-gray", preBadgeClass="badge-green";
+                let startClass="date-val date-gray", dueClass="date-val date-gray";
 
                 if(task.startDate) {
                     const sd = new Date(task.startDate).setHours(0,0,0,0);
@@ -528,11 +539,12 @@
                 dateHTML = `<span class="date-inline-container">${preTag} ${startTag} ${midTag} ${dueTag} ${postTag}</span>`;
             }
 
-            // 计时器逻辑
+            // 计时器逻辑 (读取持久化状态)
             let timerHTML = "";
             let timeLogsHTML = "";
             if (isDash && !task.done) {
-                const isRunning = activeTimer && activeTimer.sIdx===sIdx && activeTimer.tIdx===tIdx;
+                // 检查 appData.activeTimer 是否匹配当前任务
+                const isRunning = appData.activeTimer && appData.activeTimer.sIdx===sIdx && appData.activeTimer.tIdx===tIdx;
                 timerHTML = `<div class="timer-btn ${isRunning?'running':''}" onclick="toggleTimer(${sIdx}, ${tIdx}, this)">${isRunning?'⏹':'▶'}</div>`;
             }
             if (task.timeLogs && task.timeLogs.length > 0) {
@@ -685,7 +697,49 @@
         }
         function clearStatsData() { if(!confirm(`清除【${currentStatsTab}】记录？`))return; const now=new Date(); let startLimit=0; if(currentStatsTab==='day') startLimit=new Date(now.setHours(0,0,0,0)).getTime(); else if(currentStatsTab==='week') { const d=now.getDay()||7; now.setHours(0,0,0,0); startLimit=now.setDate(now.getDate()-d+1); } else if(currentStatsTab==='month') startLimit=new Date(now.getFullYear(),now.getMonth(),1).getTime(); else if(currentStatsTab==='year') startLimit=new Date(now.getFullYear(),0,1).getTime(); appData.sections.forEach(sec=>{ sec.tasks.forEach(task=>{ if(task.timeLogs) task.timeLogs=task.timeLogs.filter(log=>log.start<startLimit); }); }); updateAndSave(); renderStatsContent(); }
         
-        function toggleTimer(s,t,btn) { event.stopPropagation(); if(activeTimer) { const now=new Date(), start=activeTimer.startTime, ms=now-start, min=Math.ceil(ms/60000); const fmt=d=>`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; const disp=`${fmt(start)}-${fmt(now)}`; const task=appData.sections[activeTimer.sIdx].tasks[activeTimer.tIdx]; if(!task.timeLogs)task.timeLogs=[]; task.timeLogs.push({start:start.getTime(),end:now.getTime(),display:disp,durStr:`${min}m`}); activeTimer=null; updateAndSave(); if(activeTimer&&activeTimer.sIdx===s&&activeTimer.tIdx===t)return; } if(!btn.classList.contains('running')) { activeTimer={sIdx:s,tIdx:t,startTime:new Date()}; renderAll(); } }
+        // --- ⌚️ 计时器逻辑 (关键修改：基于持久化存储) ---
+        function toggleTimer(s, t, btn) { 
+            event.stopPropagation();
+            
+            // 如果已经有正在运行的计时器
+            if(appData.activeTimer) {
+                // 计算当前结束时间
+                const now = new Date();
+                const startTime = new Date(appData.activeTimer.start); // 从存储中读取
+                const ms = now - startTime;
+                const min = Math.ceil(ms / 60000);
+                
+                // 格式化时间字符串
+                const fmt = d => `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                const disp = `${fmt(startTime)}-${fmt(now)}`;
+                
+                // 找到对应的任务（使用 activeTimer 里保存的索引）
+                const activeSIdx = appData.activeTimer.sIdx;
+                const activeTIdx = appData.activeTimer.tIdx;
+                
+                if(appData.sections[activeSIdx] && appData.sections[activeSIdx].tasks[activeTIdx]) {
+                    const task = appData.sections[activeSIdx].tasks[activeTIdx];
+                    if(!task.timeLogs) task.timeLogs = [];
+                    task.timeLogs.push({ start: startTime.getTime(), end: now.getTime(), display: disp, durStr: `${min}m` });
+                }
+
+                // 清除当前计时状态
+                const wasSameTask = (activeSIdx === s && activeTIdx === t);
+                appData.activeTimer = null;
+                updateAndSave();
+
+                // 如果点击的是同一个任务的按钮，说明只是停止，不用重启
+                if(wasSameTask) return;
+            }
+
+            // 如果按钮之前不是运行状态（或者刚才停止了别人的，现在要启动这个）
+            if(!btn.classList.contains('running')) {
+                // 启动新计时，保存到 DB
+                appData.activeTimer = { sIdx: s, tIdx: t, start: Date.now() };
+                updateAndSave();
+            }
+        }
+
         function deleteTimeLog(s,t,i) { event.stopPropagation(); if(confirm("删除记录？")) { appData.sections[s].tasks[t].timeLogs.splice(i,1); updateAndSave(); } }
 
         // --- 基础逻辑 ---
@@ -710,7 +764,19 @@
         }
         function saveDashTitle(el) { appData.meta.dashTitle = el.innerText; dbEngine.save(appData); }
         function toggleTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].done = !appData.sections[s].tasks[t].done; updateAndSave(); } }
-        function delTask(s,t) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks.splice(t,1); updateAndSave(); } }
+        
+        // 删除任务时，如果该任务正在计时，需要清理 activeTimer
+        function delTask(s,t) { 
+            if(appData.sections[s]?.tasks[t]) { 
+                // 如果正在计时的是这个任务
+                if(appData.activeTimer && appData.activeTimer.sIdx === s && appData.activeTimer.tIdx === t) {
+                    appData.activeTimer = null;
+                }
+                appData.sections[s].tasks.splice(t,1); 
+                updateAndSave(); 
+            } 
+        }
+        
         function clearDone(s) { appData.sections[s].tasks = appData.sections[s].tasks.filter(t=>!t.done); updateAndSave(); }
         function updateProgVal(s,t,v) { if(appData.sections[s]?.tasks[t]) { appData.sections[s].tasks[t].currentVal = parseFloat(v); updateAndSave(); } }
         function adjustProg(s,t,d) { 

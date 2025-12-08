@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="">
     <link rel="icon" href="">
     
-    <title>Dzz 8.8</title>
+    <title>Dzz 8.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
@@ -160,7 +160,7 @@
             width: 24px; height: 24px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 12px; cursor: pointer; 
-            margin-left: 12px; /* 间距微调 */
+            margin-left: 12px; 
             flex-shrink: 0; border: 1px solid #ddd; background: #fff; color: var(--theme-dark); transition: all 0.2s; 
         }
         .timer-btn.running { background: var(--timer-active); color: white; border-color: var(--timer-active); animation: pulse 1.5s infinite; }
@@ -176,12 +176,12 @@
         .prog-btn { width: 32px; height: 32px; background: #fff; color: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; border: 1px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); user-select: none; transition: transform 0.1s; }
         .prog-btn:active { transform: scale(0.9); background: #f0f0f0; }
 
-        /* --- ✨ 优化删除按钮间距 --- */
+        /* 防误触 */
         .del-task-btn { 
             color: #ddd; 
             font-size: 18px; 
-            margin-left: 25px; /* 这里从 8px 改大到 25px，拉开距离 */
-            padding: 5px 8px; /* 增加内边距，方便点击 */
+            margin-left: 25px; 
+            padding: 5px 8px; 
             cursor: pointer; 
             line-height: 1;
         }
@@ -316,7 +316,22 @@
             <input type="hidden" id="editTaskIndex"><input type="hidden" id="editSectionIndex">
             <div class="form-group"><input type="text" id="inputName" class="form-input" placeholder="待办内容"></div>
             <div class="form-group"><textarea id="inputNote" class="form-input" placeholder="添加备注..." style="height:50px"></textarea></div>
-            <div class="form-group"><label class="form-label">时间安排</label><div class="row-inputs"><input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputStartDate" class="form-input" placeholder="开始日期"><input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputDueDate" class="form-input" placeholder="截止日期"></div></div>
+            
+            <div class="form-group">
+                <label class="form-label">开始时间 (可选)</label>
+                <div class="row-inputs">
+                    <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputStartDate" class="form-input" placeholder="开始日期" style="flex:2">
+                    <input type="time" id="inputStartTime" class="form-input" style="flex:1" placeholder="时间">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">截止时间 (可选)</label>
+                <div class="row-inputs">
+                    <input type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="inputDueDate" class="form-input" placeholder="截止日期" style="flex:2">
+                    <input type="time" id="inputDueTime" class="form-input" style="flex:1" placeholder="时间">
+                </div>
+            </div>
+
             <div class="form-group"><label class="form-label">进度目标</label><div class="row-inputs" style="margin-bottom:8px;"><input type="number" id="inputCurrent" class="form-input" placeholder="当前(0)"><input type="number" id="inputTarget" class="form-input" placeholder="目标"></div><div class="row-inputs"><input type="text" id="inputUnit" class="form-input" placeholder="单位(页)"><input type="number" id="inputStep" class="form-input" placeholder="步长(1)" value="1"></div></div>
             <div class="form-group"><label class="form-label">子任务 & 图片</label><textarea id="inputSubtasks" class="form-input" placeholder="子任务 (每行一个)"></textarea><div style="margin-top:10px; display:flex; align-items:center; gap:10px;"><label for="inputImg" style="background:#F2F4F2; padding:8px 12px; border-radius:8px; font-size:12px; color:#666; cursor:pointer;">📷 上传图片</label><input type="file" id="inputImg" accept="image/*" style="display:none" onchange="handleImageCompressed(this)"></div><div id="imgPreviewContainer" class="img-preview-box" style="display:none"><img id="imgPreview" class="preview-img" src=""><div class="del-img-badge" onclick="deleteTaskImg()">×</div></div><input type="hidden" id="imgBase64"></div>
             <div class="modal-buttons"><button class="btn btn-cancel" onclick="closeModal()">取消</button><button class="btn btn-save" onclick="saveTask()">完成</button></div>
@@ -352,7 +367,6 @@
         let currentStatsTab = 'day';
 
         window.onload = async () => {
-            // 🔥 生成图标
             setAppIcon();
 
             const d = new Date();
@@ -376,29 +390,20 @@
             } catch(e) { alert("Error: " + e); }
         };
 
-        // --- 🍎 动态生成APP图标 ---
         function setAppIcon() {
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
-            
-            // 背景
-            ctx.fillStyle = "#556b2f"; // 使用当前主题色
+            ctx.fillStyle = "#556b2f"; 
             ctx.fillRect(0, 0, 512, 512);
-            
-            // 文字 Dzz
             ctx.fillStyle = "white";
             ctx.font = "bold 200px -apple-system, sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("Dzz", 256, 256);
-            
             const url = canvas.toDataURL("image/png");
-            
-            // 更新 Link 标签
             const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
             const favIcon = document.querySelector("link[rel='icon']");
-            
             if(appleIcon) appleIcon.href = url;
             if(favIcon) favIcon.href = url;
         }
@@ -526,7 +531,9 @@
 
                 if(task.startDate) {
                     const sd = new Date(task.startDate).setHours(0,0,0,0);
-                    const txt = task.startDate.replace(/-/g,'.');
+                    let txt = task.startDate.replace(/-/g,'.');
+                    if(task.startTime) txt += ` ${task.startTime}`; // 显示开始时间
+
                     if(now < sd) {
                         const diff = Math.ceil((sd - now)/86400000);
                         preTag = `<span class="date-badge badge-green">还有 ${diff} 天</span>`;
@@ -547,7 +554,9 @@
 
                 if(task.dueDate) {
                     const dd = new Date(task.dueDate).setHours(0,0,0,0);
-                    const txt = task.dueDate.replace(/-/g,'.');
+                    let txt = task.dueDate.replace(/-/g,'.');
+                    if(task.dueTime) txt += ` ${task.dueTime}`; // 显示截止时间
+
                     const diff = Math.ceil((dd - now)/86400000);
                     if(now > dd && !task.done) {
                         postTag = `<span class="date-badge badge-red">过期 ${Math.abs(diff)} 天</span>`;
@@ -813,11 +822,63 @@
 
         function showLightbox(src) { document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').style.display='flex'; }
         function closeLightbox() { document.getElementById('lightbox').style.display='none'; }
-        function openModal(s, t=null) { document.getElementById("editSectionIndex").value=s; document.getElementById("editTaskIndex").value=t!==null?t:-1; document.getElementById("taskModal").style.display="flex"; const box=document.getElementById("imgPreviewContainer"); if(t!==null){ const task=appData.sections[s].tasks[t]; document.getElementById("inputName").value=task.name; document.getElementById("inputNote").value=task.note||""; document.getElementById("inputStartDate").value=task.startDate||""; document.getElementById("inputDueDate").value=task.dueDate||""; document.getElementById("inputCurrent").value=task.currentVal||""; document.getElementById("inputTarget").value=task.targetVal||""; document.getElementById("inputUnit").value=task.unit||""; document.getElementById("inputStep").value=task.stepVal||""; document.getElementById("inputSubtasks").value=task.subtasks||""; document.getElementById("imgBase64").value=task.img||""; if(task.img){document.getElementById("imgPreview").src=task.img;box.style.display="inline-block";}else box.style.display="none"; }else{ document.querySelectorAll('.form-input').forEach(i=>i.value=""); document.getElementById("imgBase64").value=""; box.style.display="none"; } }
+        function openModal(s, t=null) { 
+            document.getElementById("editSectionIndex").value=s; 
+            document.getElementById("editTaskIndex").value=t!==null?t:-1; 
+            document.getElementById("taskModal").style.display="flex"; 
+            const box=document.getElementById("imgPreviewContainer"); 
+            
+            if(t!==null){ 
+                const task=appData.sections[s].tasks[t]; 
+                document.getElementById("inputName").value=task.name; 
+                document.getElementById("inputNote").value=task.note||""; 
+                document.getElementById("inputStartDate").value=task.startDate||""; 
+                document.getElementById("inputStartTime").value=task.startTime||""; // 读取开始时间
+                document.getElementById("inputDueDate").value=task.dueDate||""; 
+                document.getElementById("inputDueTime").value=task.dueTime||""; // 读取截止时间
+                document.getElementById("inputCurrent").value=task.currentVal||""; 
+                document.getElementById("inputTarget").value=task.targetVal||""; 
+                document.getElementById("inputUnit").value=task.unit||""; 
+                document.getElementById("inputStep").value=task.stepVal||""; 
+                document.getElementById("inputSubtasks").value=task.subtasks||""; 
+                document.getElementById("imgBase64").value=task.img||""; 
+                if(task.img){document.getElementById("imgPreview").src=task.img;box.style.display="inline-block";}else box.style.display="none"; 
+            }else{ 
+                document.querySelectorAll('.form-input').forEach(i=>i.value=""); 
+                document.getElementById("imgBase64").value=""; 
+                box.style.display="none"; 
+            } 
+        }
         function closeModal() { document.getElementById("taskModal").style.display="none"; }
         function handleImageCompressed(i) { if(i.files&&i.files[0]){ const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.src=e.target.result; img.onload=()=>{ const c=document.createElement('canvas'), ctx=c.getContext('2d'); let w=img.width, h=img.height; if(w>800){h=Math.round(h*800/w);w=800;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const b=c.toDataURL('image/jpeg',0.7); document.getElementById("imgBase64").value=b; document.getElementById("imgPreview").src=b; document.getElementById("imgPreviewContainer").style.display="inline-block"; } }; r.readAsDataURL(i.files[0]); } }
         function deleteTaskImg() { document.getElementById("imgBase64").value=""; document.getElementById("imgPreviewContainer").style.display="none"; document.getElementById("inputImg").value=""; }
-        async function saveTask() { const s=parseInt(document.getElementById("editSectionIndex").value), t=parseInt(document.getElementById("editTaskIndex").value); const task={ name:document.getElementById("inputName").value.trim(), note:document.getElementById("inputNote").value, startDate:document.getElementById("inputStartDate").value, dueDate:document.getElementById("inputDueDate").value, currentVal:parseFloat(document.getElementById("inputCurrent").value)||0, targetVal:parseFloat(document.getElementById("inputTarget").value)||0, unit:document.getElementById("inputUnit").value, stepVal:parseFloat(document.getElementById("inputStep").value)||1, subtasks:document.getElementById("inputSubtasks").value, img:document.getElementById("imgBase64").value, done:false, id:t!==-1?appData.sections[s].tasks[t].id:Date.now(), timeLogs:t!==-1?(appData.sections[s].tasks[t].timeLogs||[]):[] }; if(!task.name)return alert("名称?"); if(t!==-1){ task.done=appData.sections[s].tasks[t].done; appData.sections[s].tasks[t]=task; }else appData.sections[s].tasks.push(task); updateAndSave(); closeModal(); }
+        
+        async function saveTask() { 
+            const s=parseInt(document.getElementById("editSectionIndex").value), t=parseInt(document.getElementById("editTaskIndex").value); 
+            const task={ 
+                name:document.getElementById("inputName").value.trim(), 
+                note:document.getElementById("inputNote").value, 
+                startDate:document.getElementById("inputStartDate").value, 
+                startTime:document.getElementById("inputStartTime").value, // 保存开始时间
+                dueDate:document.getElementById("inputDueDate").value, 
+                dueTime:document.getElementById("inputDueTime").value, // 保存截止时间
+                currentVal:parseFloat(document.getElementById("inputCurrent").value)||0, 
+                targetVal:parseFloat(document.getElementById("inputTarget").value)||0, 
+                unit:document.getElementById("inputUnit").value, 
+                stepVal:parseFloat(document.getElementById("inputStep").value)||1, 
+                subtasks:document.getElementById("inputSubtasks").value, 
+                img:document.getElementById("imgBase64").value, 
+                done:false, 
+                id:t!==-1?appData.sections[s].tasks[t].id:Date.now(), 
+                timeLogs:t!==-1?(appData.sections[s].tasks[t].timeLogs||[]):[] 
+            }; 
+            if(!task.name)return alert("名称?"); 
+            if(t!==-1){ 
+                task.done=appData.sections[s].tasks[t].done; 
+                appData.sections[s].tasks[t]=task; 
+            }else appData.sections[s].tasks.push(task); 
+            updateAndSave(); closeModal(); 
+        }
         function addNewSection() { appData.sections.push({title:"新板块", tasks:[]}); updateAndSave(); }
         function deleteSection(i) { if(confirm("删除板块?")) { appData.sections.splice(i,1); updateAndSave(); } }
         async function exportData() { const b=new Blob([JSON.stringify(appData)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`Dzz备份.json`; a.click(); }
